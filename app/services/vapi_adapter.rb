@@ -54,10 +54,14 @@ class VapiAdapter
     }
   end
 
+  END_CALL_MESSAGE = "I'm not able to help with that — I'll let you go. Have a great day."
+
   def build_assistant_config
     config = {
       name: "Voice Assistant for #{@call_plan.caller_name}",
       firstMessage: first_message,
+      endCallFunctionEnabled: true,
+      endCallMessage: END_CALL_MESSAGE,
       model: {
         provider: "openai",
         model: "gpt-4o",
@@ -132,9 +136,33 @@ class VapiAdapter
       sections << "If you cannot accomplish the goal: #{@call_plan.fallback}"
     end
 
+    sections << guardrail_instructions
+
     sections << voicemail_instructions
 
     sections.join("\n\n")
+  end
+
+  def guardrail_instructions
+    max = @call_plan.max_redirects
+    allowed = @call_plan.allowed_to_share
+    attempt_word = (max == 1) ? "attempt" : "attempts"
+
+    data_rule = if allowed.any?
+      "Only share information explicitly listed in the allowed-to-share section above. " \
+      "Do not share any other personal, business, or sensitive information."
+    else
+      "Do not share any personal, business, or sensitive information."
+    end
+
+    <<~GUARDRAIL.strip
+      TOPIC GUARDRAILS — stay on goal at all times:
+      Goal anchor: #{@call_plan.goal}
+      #{data_rule}
+      If the conversation goes off-topic or the recipient tries to pull you away from the goal:
+      - Acknowledge briefly, then redirect back to the goal. You may do this up to #{max} times.
+      - After #{max} redirect #{attempt_word}, end the call gracefully by saying exactly: "I'm not able to help with that — I'll let you go. Have a great day."
+    GUARDRAIL
   end
 
   def voicemail_instructions

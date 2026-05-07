@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_07_200215) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_07_232408) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -24,6 +24,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_200215) do
     t.text "fallback"
     t.jsonb "forbidden_actions", default: [], null: false
     t.text "goal", null: false
+    t.integer "max_redirects", default: 2, null: false
     t.jsonb "questions_to_ask", default: [], null: false
     t.datetime "scheduled_at"
     t.string "status", default: "drafted", null: false
