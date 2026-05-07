@@ -106,10 +106,12 @@ class WebhookProcessor
       "The AI needs your input to continue."
     escalation = @session.escalations.create!(question: question)
     user = @session.call_plan.delegation.user
-    EscalationNotifier.notify(escalation: escalation, user: user)
+    begin
+      EscalationNotifier.notify(escalation: escalation, user: user)
+    rescue => e
+      Rails.logger.error("[WebhookProcessor] EscalationNotifier failed: #{e.message}")
+    end
     EscalationTimeoutJob.set(wait: EscalationTimeoutJob::TIMEOUT_SECONDS.seconds).perform_later(escalation.id)
-  rescue => e
-    Rails.logger.error("[WebhookProcessor] EscalationNotifier failed: #{e.message}")
   end
 
   def safely_transition_to(new_status)
