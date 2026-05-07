@@ -14,7 +14,7 @@ jobs:
       database_url: ${{ steps.branch.outputs.db_url }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install neonctl
         run: npm install -g neonctl
