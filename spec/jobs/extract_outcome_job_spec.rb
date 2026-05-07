@@ -15,17 +15,17 @@ RSpec.describe ExtractOutcomeJob, type: :job do
       end
 
       it "delegates to OutcomeExtractor with session_status=voicemail" do
-        stub_extractor({"status" => "voicemail", "summary" => "Left a voicemail."})
+        stub_extractor({ "status" => "voicemail", "summary" => "Left a voicemail." })
         expect(OutcomeExtractor).to receive(:call).with(
           transcript: session.transcript,
           call_plan: call_plan,
           session_status: "voicemail"
-        ).and_return({"status" => "voicemail", "summary" => "Left a voicemail."})
+        ).and_return({ "status" => "voicemail", "summary" => "Left a voicemail." })
         described_class.perform_now(session.id)
       end
 
       it "persists the outcome" do
-        stub_extractor({"status" => "voicemail", "summary" => "Left a voicemail."})
+        stub_extractor({ "status" => "voicemail", "summary" => "Left a voicemail." })
         described_class.perform_now(session.id)
         expect(session.reload.outcome["status"]).to eq("voicemail")
       end
@@ -35,12 +35,12 @@ RSpec.describe ExtractOutcomeJob, type: :job do
       let(:session) { create(:call_session, :voicemail, call_plan: call_plan, transcript: nil) }
 
       it "still delegates to OutcomeExtractor" do
-        stub_extractor({"status" => "voicemail", "summary" => "Left a voicemail stating the purpose of the call."})
+        stub_extractor({ "status" => "voicemail", "summary" => "Left a voicemail stating the purpose of the call." })
         expect(OutcomeExtractor).to receive(:call).with(
           transcript: nil,
           call_plan: call_plan,
           session_status: "voicemail"
-        ).and_return({"status" => "voicemail", "summary" => "Left a voicemail stating the purpose of the call."})
+        ).and_return({ "status" => "voicemail", "summary" => "Left a voicemail stating the purpose of the call." })
         described_class.perform_now(session.id)
       end
     end
@@ -52,12 +52,12 @@ RSpec.describe ExtractOutcomeJob, type: :job do
       end
 
       it "delegates to OutcomeExtractor with session_status=completed" do
-        stub_extractor({"status" => "completed", "summary" => "Car ready."})
+        stub_extractor({ "status" => "completed", "summary" => "Car ready." })
         expect(OutcomeExtractor).to receive(:call).with(
           transcript: session.transcript,
           call_plan: call_plan,
           session_status: "completed"
-        ).and_return({"status" => "completed", "summary" => "Car ready."})
+        ).and_return({ "status" => "completed", "summary" => "Car ready." })
         described_class.perform_now(session.id)
         expect(session.reload.outcome["status"]).to eq("completed")
       end
@@ -66,7 +66,7 @@ RSpec.describe ExtractOutcomeJob, type: :job do
     context "when outcome already set" do
       let(:session) do
         create(:call_session, :voicemail, call_plan: call_plan,
-          outcome: {"status" => "voicemail", "summary" => "already set"})
+          outcome: { "status" => "voicemail", "summary" => "already set" })
       end
 
       it "does not call OutcomeExtractor" do
