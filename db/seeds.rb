@@ -38,3 +38,11 @@ CallTemplate.find_or_create_by!(name: "Auto Repair Status Check") do |t|
 end
 
 puts "Seeded #{CallTemplate.count} call template(s)."
+
+# Dev user — only created in development, never in production.
+if Rails.env.development?
+  User.find_or_create_by!(email: "dev@example.com") do |u|
+    u.password = "password"
+  end
+  puts "Dev user: dev@example.com / password"
+end

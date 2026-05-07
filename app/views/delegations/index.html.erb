@@ -1,41 +1,98 @@
-<h1>Your Delegations</h1>
-<p>
-  <%= link_to current_user.email %> &middot;
-  <%= link_to "Sign out", destroy_user_session_path, data: { turbo_method: :delete } %>
-</p>
+<div class="flex flex-col gap-8">
 
-<% if @call_templates.any? %>
-  <h2>Delegate a new call</h2>
-  <% @call_templates.each do |template| %>
+  <%# Page header %>
+  <div class="page-header">
     <div>
-      <strong><%= template.name %></strong>
-      <p><%= template.description %></p>
-      <%= button_to "Use this template", delegations_path(delegation: { call_template_id: template.id }),
-            method: :post %>
+      <h1 class="page-title">Delegations</h1>
+      <p class="page-subtitle">AI-handled calls you've delegated</p>
+    </div>
+  </div>
+
+  <%# New delegation — templates %>
+  <% if @call_templates.any? %>
+    <div>
+      <p class="section-title">Start a new delegation</p>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% @call_templates.each do |template| %>
+          <div class="card hover:shadow-md hover:border-brand-200 transition-all duration-150 group">
+            <div class="card-body flex flex-col gap-3 h-full">
+              <div class="w-9 h-9 rounded-lg bg-brand-50 border border-brand-100 flex items-center justify-center group-hover:bg-brand-100 transition-colors">
+                <svg class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-slate-900 dark:text-slate-100"><%= template.name %></p>
+                <% if template.description.present? %>
+                  <p class="text-xs text-slate-500 mt-1 leading-relaxed"><%= template.description %></p>
+                <% end %>
+              </div>
+              <%= button_to delegations_path(delegation: { call_template_id: template.id }),
+                    method: :post,
+                    class: "btn-primary w-full justify-center mt-2" do %>
+                Use this template
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% else %>
+    <div class="card card-body text-center py-10">
+      <p class="text-sm text-slate-500">No call templates available yet.</p>
     </div>
   <% end %>
-<% else %>
-  <p>No call templates available yet.</p>
-<% end %>
 
-<h2>Recent delegations</h2>
-<% if @delegations.any? %>
-  <ul>
-    <% @delegations.each do |delegation| %>
-      <li>
-        <%= delegation.call_template&.name || "Custom call" %>
-        &mdash;
-        <% if delegation.call_plan %>
-          Status: <strong><%= delegation.call_plan.status %></strong>
-          &middot;
-          <%= link_to "View call plan", delegation_call_plan_path(delegation) %>
-        <% else %>
-          <%= link_to "Create call plan", new_delegation_call_plan_path(delegation) %>
+  <%# Recent delegations %>
+  <div>
+    <p class="section-title">Recent delegations</p>
+    <% if @delegations.any? %>
+      <div class="card divide-y divide-slate-100">
+        <% @delegations.each do |delegation| %>
+          <div class="px-6 py-4 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+                  <%= delegation.call_template&.name || "Custom call" %>
+                </p>
+                <p class="text-xs text-slate-400"><%= delegation.created_at.strftime("%b %-d, %Y") %></p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0">
+              <% if delegation.call_plan %>
+                <%
+                  status = delegation.call_plan.status
+                  badge_class = case status
+                    when "approved" then "badge-green"
+                    when "drafted"  then "badge-amber"
+                    else "badge-slate"
+                  end
+                %>
+                <span class="<%= badge_class %>"><%= status.capitalize %></span>
+                <%= link_to "View", delegation_call_plan_path(delegation), class: "btn-secondary text-xs" %>
+              <% else %>
+                <span class="badge-slate">No plan yet</span>
+                <%= link_to "Create plan", new_delegation_call_plan_path(delegation), class: "btn-primary text-xs" %>
+              <% end %>
+            </div>
+          </div>
         <% end %>
-        <small>(<%= delegation.created_at.strftime("%b %-d") %>)</small>
-      </li>
+      </div>
+    <% else %>
+      <div class="card card-body text-center py-12">
+        <svg class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/>
+        </svg>
+        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">No delegations yet</p>
+        <p class="text-xs text-slate-400 mt-1">Use a template above to delegate your first call.</p>
+      </div>
     <% end %>
-  </ul>
-<% else %>
-  <p>You haven't delegated any calls yet.</p>
-<% end %>
+  </div>
+
+</div>

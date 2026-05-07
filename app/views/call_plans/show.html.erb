@@ -1,69 +1,129 @@
-<h1>Review your call plan</h1>
+<div class="max-w-2xl">
 
-<% if @call_plan.approved? %>
-  <p><strong>Status: Approved</strong> &mdash; approved on <%= @call_plan.approved_at.strftime("%b %-d at %l:%M %p") %></p>
-<% else %>
-  <p>Status: Draft &mdash; review the details below, then approve when ready.</p>
-<% end %>
+  <%# Header %>
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Review call plan</h1>
+      <p class="page-subtitle">Check everything looks right, then approve to send.</p>
+    </div>
+    <% if @call_plan.approved? %>
+      <span class="badge-green text-sm px-3 py-1.5">
+        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+        Approved
+      </span>
+    <% else %>
+      <span class="badge-amber text-sm px-3 py-1.5">Draft</span>
+    <% end %>
+  </div>
 
-<dl>
-  <dt>Calling</dt>
-  <dd><%= @call_plan.target_name %> at <%= @call_plan.target_phone %></dd>
-
-  <dt>Caller identity</dt>
-  <dd>The AI will identify the caller as <%= @call_plan.caller_name %></dd>
-
-  <dt>Goal</dt>
-  <dd><%= @call_plan.goal %></dd>
-
-  <% if @call_plan.fallback.present? %>
-    <dt>Fallback</dt>
-    <dd><%= @call_plan.fallback %></dd>
+  <%# Status banner %>
+  <% if @call_plan.approved? %>
+    <div class="flash-notice mb-6 flex items-center gap-2">
+      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Approved on <%= @call_plan.approved_at.strftime("%B %-d at %l:%M %p") %> &mdash; the AI will place this call.
+    </div>
+  <% else %>
+    <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 mb-6 flex items-start gap-2">
+      <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+      <span>This plan is a draft. Review the details below and approve when you're ready — the AI won't dial until you confirm.</span>
+    </div>
   <% end %>
 
-  <% if @call_plan.allowed_to_share.any? %>
-    <dt>Allowed to share</dt>
-    <dd>
-      <ul>
-        <% @call_plan.allowed_to_share.each do |item| %>
-          <li><%= item %></li>
-        <% end %>
-      </ul>
-    </dd>
-  <% end %>
+  <%# Detail card %>
+  <div class="card mb-6">
+    <div class="card-header">
+      <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Call details</h2>
+    </div>
+    <div class="card-body divide-y divide-slate-50 p-0">
 
-  <% if @call_plan.questions_to_ask.any? %>
-    <dt>Questions to ask</dt>
-    <dd>
-      <ul>
-        <% @call_plan.questions_to_ask.each do |q| %>
-          <li><%= q %></li>
-        <% end %>
-      </ul>
-    </dd>
-  <% end %>
+      <div class="dl-row px-6">
+        <dt class="dl-term">Calling</dt>
+        <dd class="dl-detail">
+          <span class="font-medium"><%= @call_plan.target_name %></span>
+          &nbsp;&nbsp;
+          <span class="phone"><%= @call_plan.target_phone %></span>
+        </dd>
+      </div>
 
-  <% if @call_plan.forbidden_actions.any? %>
-    <dt>Forbidden — the AI must never</dt>
-    <dd>
-      <ul>
-        <% @call_plan.forbidden_actions.each do |item| %>
-          <li><%= item %></li>
-        <% end %>
-      </ul>
-    </dd>
-  <% end %>
-</dl>
+      <div class="dl-row px-6">
+        <dt class="dl-term">Caller identity</dt>
+        <dd class="dl-detail">AI will identify as <strong><%= @call_plan.caller_name %></strong></dd>
+      </div>
 
-<% unless @call_plan.approved? %>
-  <p>
-    <%= link_to "Edit call plan", edit_delegation_call_plan_path(@delegation) %>
-  </p>
+      <div class="dl-row px-6">
+        <dt class="dl-term">Goal</dt>
+        <dd class="dl-detail"><%= @call_plan.goal %></dd>
+      </div>
 
-  <%= button_to "Approve and send",
-        approve_delegation_call_plan_path(@delegation),
-        method: :post,
-        data: { turbo_confirm: "Are you sure? Once approved the AI will place this call." } %>
-<% end %>
+      <% if @call_plan.fallback.present? %>
+        <div class="dl-row px-6">
+          <dt class="dl-term">Fallback</dt>
+          <dd class="dl-detail text-slate-600 dark:text-slate-400"><%= @call_plan.fallback %></dd>
+        </div>
+      <% end %>
 
-<p><%= link_to "← All delegations", delegations_path %></p>
+      <% if @call_plan.allowed_to_share.any? %>
+        <div class="dl-row px-6">
+          <dt class="dl-term">May share</dt>
+          <dd class="dl-detail">
+            <ul class="space-y-1">
+              <% @call_plan.allowed_to_share.each do |item| %>
+                <li class="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+                  <%= item %>
+                </li>
+              <% end %>
+            </ul>
+          </dd>
+        </div>
+      <% end %>
+
+      <% if @call_plan.questions_to_ask.any? %>
+        <div class="dl-row px-6">
+          <dt class="dl-term">Questions</dt>
+          <dd class="dl-detail">
+            <ul class="space-y-1">
+              <% @call_plan.questions_to_ask.each do |q| %>
+                <li class="flex items-start gap-2 text-slate-700 dark:text-slate-300">
+                  <span class="text-brand-500 font-bold shrink-0 mt-0.5">?</span>
+                  <%= q %>
+                </li>
+              <% end %>
+            </ul>
+          </dd>
+        </div>
+      <% end %>
+
+      <% if @call_plan.forbidden_actions.any? %>
+        <div class="dl-row px-6">
+          <dt class="dl-term">Never allowed</dt>
+          <dd class="dl-detail">
+            <ul class="space-y-1">
+              <% @call_plan.forbidden_actions.each do |item| %>
+                <li class="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <svg class="w-3.5 h-3.5 text-red-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/></svg>
+                  <%= item %>
+                </li>
+              <% end %>
+            </ul>
+          </dd>
+        </div>
+      <% end %>
+
+    </div>
+  </div>
+
+  <%# Actions %>
+  <div class="flex flex-wrap items-center gap-3">
+    <% unless @call_plan.approved? %>
+      <%= button_to "Approve & send call",
+            approve_delegation_call_plan_path(@delegation),
+            method: :post,
+            data: { turbo_confirm: "Are you sure? Once approved the AI will place this call." },
+            class: "btn-primary btn-lg" %>
+      <%= link_to "Edit plan", edit_delegation_call_plan_path(@delegation), class: "btn-secondary btn-lg" %>
+    <% end %>
+    <%= link_to "← All delegations", delegations_path, class: "btn-ghost ml-auto" %>
+  </div>
+
+</div>
