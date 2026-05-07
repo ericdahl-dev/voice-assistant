@@ -108,7 +108,7 @@ class WebhookProcessor
     user = @session.call_plan.delegation.user
     begin
       EscalationNotifier.notify(escalation: escalation, user: user)
-    rescue => e
+    rescue StandardError => e
       Rails.logger.error("[WebhookProcessor] EscalationNotifier failed: #{e.message}")
     end
     EscalationTimeoutJob.set(wait: EscalationTimeoutJob::TIMEOUT_SECONDS.seconds).perform_later(escalation.id)

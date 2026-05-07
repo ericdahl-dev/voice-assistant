@@ -193,6 +193,7 @@ RSpec.describe WebhookProcessor do
 
       it "still enqueues escalation timeout when notifier raises" do
         allow(EscalationNotifier).to receive(:notify).and_raise(StandardError, "notify failed")
+        expect(Rails.logger).to receive(:error).with("[WebhookProcessor] EscalationNotifier failed: notify failed")
 
         expect do
           described_class.new(event("tool-calls",
