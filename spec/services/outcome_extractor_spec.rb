@@ -68,6 +68,32 @@ RSpec.describe OutcomeExtractor, type: :service do
     allow(Rails.application.credentials).to receive(:dig).with(:openai_api_key).and_return("test-key")
   end
 
+  describe ".call with voicemail session_status" do
+    context "with transcript" do
+      before do
+        fake_response = instance_double(Net::HTTPResponse,
+          code: "200",
+          body: { "choices" => [ { "message" => { "content" => "Left a voicemail about car pickup." } } ] }.to_json)
+        allow_any_instance_of(Net::HTTP).to receive(:request).and_return(fake_response)
+      end
+
+      it "returns status=voicemail with summary" do
+        result = described_class.call(transcript: "Hi this is an AI...", call_plan: call_plan, session_status: "voicemail")
+        expect(result["status"]).to eq("voicemail")
+        expect(result["summary"]).to be_present
+      end
+    end
+
+    context "without transcript" do
+      it "returns fallback without calling OpenAI" do
+        expect_any_instance_of(Net::HTTP).not_to receive(:request)
+        result = described_class.call(transcript: nil, call_plan: call_plan, session_status: "voicemail")
+        expect(result["status"]).to eq("voicemail")
+        expect(result["summary"]).to include("voicemail")
+      end
+    end
+  end
+
   describe ".call" do
     context "with a clear transcript" do
       before { stub_openai(openai_response) }

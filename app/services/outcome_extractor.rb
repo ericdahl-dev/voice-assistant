@@ -8,21 +8,38 @@ class OutcomeExtractor
   OPENAI_URL = "https://api.openai.com/v1/chat/completions"
   MODEL = "gpt-4o-mini"
 
-  def self.call(transcript:, call_plan:)
-    new(transcript:, call_plan:).call
+  VOICEMAIL_PROMPT = <<~PROMPT.strip
+    The AI left a voicemail. Based on the transcript below, write a one-sentence summary
+    of the voicemail message that was left. Return only the summary sentence, no preamble.
+  PROMPT
+
+  def self.call(transcript:, call_plan:, session_status: "completed")
+    new(transcript:, call_plan:, session_status:).call
   end
 
-  def initialize(transcript:, call_plan:)
+  def initialize(transcript:, call_plan:, session_status: "completed")
     @transcript = transcript
     @call_plan = call_plan
+    @session_status = session_status
   end
 
   def call
+    return voicemail_outcome if @session_status == "voicemail"
     response = post_to_openai(build_messages)
     parse_outcome(response)
   end
 
   private
+
+  def voicemail_outcome
+    summary = if @transcript.present?
+      prompt = "#{VOICEMAIL_PROMPT}\n\nTranscript:\n#{@transcript}"
+      request_openai(messages: [ { role: "user", content: prompt } ], temperature: 0.2)
+    else
+      "Left a voicemail stating the purpose of the call."
+    end
+    { "status" => "voicemail", "summary" => summary }
+  end
 
   def build_messages
     [
@@ -65,17 +82,18 @@ class OutcomeExtractor
   end
 
   def post_to_openai(messages)
+    request_openai(messages: messages, temperature: 0, response_format: { type: "json_object" })
+  end
+
+  def request_openai(messages:, temperature: 0, response_format: nil)
     uri = URI(OPENAI_URL)
     request = Net::HTTP::Post.new(uri, {
       "Content-Type" => "application/json",
       "Authorization" => "Bearer #{openai_api_key}"
     })
-    request.body = {
-      model: MODEL,
-      messages: messages,
-      temperature: 0,
-      response_format: { type: "json_object" }
-    }.to_json
+    body = { model: MODEL, messages: messages, temperature: temperature }
+    body[:response_format] = response_format if response_format
+    request.body = body.to_json
 
     response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
       http.request(request)
