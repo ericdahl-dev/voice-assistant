@@ -1,11 +1,11 @@
 require "net/http"
 require "json"
-require "openai"
 
 # Translates a CallPlan into a Vapi assistant + call config and places the call.
 # Returns a call_id string on success. Contains no business logic — only
 # translation and HTTP. All policy (disclosure, forbidden actions) lives in
-# CallPlan and is passed in verbatim.
+# CallPlan and is passed in verbatim. Goal summarization must be performed
+# upstream (e.g. via GoalSummarizer) before calling this adapter.
 class VapiAdapter
   VAPI_BASE_URL = "https://api.vapi.ai"
 
@@ -16,16 +16,17 @@ class VapiAdapter
   VOICEMAIL_TEMPLATE = "Hi, this is an AI assistant calling on behalf of %<caller_name>s. " \
                        "I'm calling to %<goal>s. Please call us back at your earliest convenience. Thank you."
 
-  def self.call(call_plan:)
-    new(call_plan:).call
+  def self.call(call_plan:, goal_summary:)
+    new(call_plan:, goal_summary:).call
   end
 
   def self.send_message(vapi_call_id:, message:)
-    new(call_plan: nil).send_inject_message(vapi_call_id, message)
+    new(call_plan: nil, goal_summary: nil).send_inject_message(vapi_call_id, message)
   end
 
-  def initialize(call_plan:)
+  def initialize(call_plan:, goal_summary:)
     @call_plan = call_plan
+    @goal_summary = goal_summary
   end
 
   def call
@@ -81,7 +82,7 @@ class VapiAdapter
     else
       format(DISCLOSURE_TEMPLATE,
         caller_name: @call_plan.caller_name,
-        goal_summary: summarize_goal,
+        goal_summary: @goal_summary,
         question_count: question_count)
     end
   end
@@ -89,41 +90,6 @@ class VapiAdapter
   def question_count
     count = @call_plan.questions_to_ask.length
     count <= 1 ? "a quick question" : "a few quick questions"
-  end
-
-  def summarize_goal
-    key = Rails.application.credentials[:openai_api_key] || ENV["OPENAI_API_KEY"]
-    return summarize_goal_fallback unless key.present?
-
-    client = OpenAI::Client.new(access_token: key)
-    response = client.chat(
-      parameters: {
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "You summarize a caller's goal into a short, natural phrase (3-6 words) " \
-                     "suitable for spoken disclosure, like \"a vehicle status check\" or " \
-                     "\"a prescription refill request\". Lowercase. No punctuation at the end. " \
-                     "Never quote the original text verbatim."
-          },
-          { role: "user", content: @call_plan.goal }
-        ],
-        max_tokens: 20,
-        temperature: 0.3
-      }
-    )
-    result = response.dig("choices", 0, "message", "content").to_s.strip.downcase.gsub(/[.!?]+\z/, "")
-    result.present? ? result : summarize_goal_fallback
-  rescue => e
-    Rails.logger.warn("[VapiAdapter] summarize_goal LLM failed: #{e.message}")
-    summarize_goal_fallback
-  end
-
-  def summarize_goal_fallback
-    goal = @call_plan.goal.strip
-    first_line = goal.lines.first.to_s.strip.gsub(/\A[\-\*\d\.]+\s*/, "").gsub(/[?.!]+\z/, "").downcase
-    first_line.length > 60 ? first_line[0, 60].sub(/\s+\S+\z/, "").strip : first_line
   end
 
   def build_system_prompt
