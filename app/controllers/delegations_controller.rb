@@ -29,6 +29,6 @@ class DelegationsController < ApplicationController
   private
 
   def delegation_params
-    params.expect(delegation: [:call_template_id])
+    params.expect(delegation: [ :call_template_id ])
   end
 end

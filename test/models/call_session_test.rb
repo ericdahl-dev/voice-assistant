@@ -75,7 +75,7 @@ class CallSessionTest < ActiveSupport::TestCase
 
   test "needs_user path: in_conversation → needs_user → in_conversation → completed" do
     session = CallSession.create!(call_plan: approved_call_plan)
-    [:queued, :dialing, :connected, :in_conversation].each { |s| session.transition_to!(s) }
+    [ :queued, :dialing, :connected, :in_conversation ].each { |s| session.transition_to!(s) }
 
     session.transition_to!("needs_user")
     assert session.needs_user?
@@ -106,14 +106,14 @@ class CallSessionTest < ActiveSupport::TestCase
 
   test "cannot go backwards from completed to drafted" do
     session = CallSession.create!(call_plan: approved_call_plan)
-    [:queued, :dialing, :connected, :in_conversation, :completed].each { |s| session.transition_to!(s) }
+    [ :queued, :dialing, :connected, :in_conversation, :completed ].each { |s| session.transition_to!(s) }
 
     assert_raises(CallSession::InvalidTransitionError) { session.transition_to!("drafted") }
   end
 
   test "cannot transition out of a terminal voicemail state" do
     session = CallSession.create!(call_plan: approved_call_plan)
-    [:queued, :dialing, :connected, :voicemail].each { |s| session.transition_to!(s) }
+    [ :queued, :dialing, :connected, :voicemail ].each { |s| session.transition_to!(s) }
 
     assert_raises(CallSession::InvalidTransitionError) { session.transition_to!("completed") }
   end
@@ -146,13 +146,13 @@ class CallSessionTest < ActiveSupport::TestCase
       "status" => "completed",
       "summary" => "Vehicle is ready for pickup.",
       "follow_up_needed" => false,
-      "important_details" => ["Ready at 3pm", "No additional charges"],
+      "important_details" => [ "Ready at 3pm", "No additional charges" ],
       "confidence" => 0.95
     })
 
     session.reload
     assert_equal "completed", session.outcome["status"]
-    assert_equal ["Ready at 3pm", "No additional charges"], session.outcome["important_details"]
+    assert_equal [ "Ready at 3pm", "No additional charges" ], session.outcome["important_details"]
     assert_equal 0.95, session.outcome["confidence"]
   end
 end
