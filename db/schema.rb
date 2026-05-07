@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_07_161102) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_07_185331) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -25,6 +25,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_161102) do
     t.jsonb "forbidden_actions", default: [], null: false
     t.text "goal", null: false
     t.jsonb "questions_to_ask", default: [], null: false
+    t.datetime "scheduled_at"
     t.string "status", default: "drafted", null: false
     t.string "target_contact_name"
     t.string "target_name", null: false
