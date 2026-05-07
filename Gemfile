@@ -36,6 +36,10 @@ gem "good_job"
 # OpenAI API client
 gem "ruby-openai", "~> 7.0"
 
+# PostHog analytics
+gem "posthog-ruby"
+gem "posthog-rails"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
