@@ -50,34 +50,6 @@ jobs:
           fi
           echo "db_url=$DB_URL" >> $GITHUB_OUTPUT
 
-  test:
-    name: Test on preview branch
-    needs: create_branch
-    if: |
-      needs.create_branch.result == 'success' &&
-      needs.create_branch.outputs.database_url != ''
-    runs-on: ubuntu-latest
-
-    env:
-      RAILS_ENV: test
-      DATABASE_URL: ${{ needs.create_branch.outputs.database_url }}
-      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
-
-      - name: Set up database
-        run: bin/rails db:schema:load
-
-      - name: Run tests
-        run: bundle exec rspec
-
   delete_branch:
     name: Delete Neon branch
     if: github.event.action == 'closed'

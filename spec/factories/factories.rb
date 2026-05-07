@@ -51,4 +51,25 @@ FactoryBot.define do
       status { "voicemail" }
     end
   end
+
+  factory :escalation do
+    association :call_session
+    question { "Should I accept the extended warranty offer?" }
+    timed_out { false }
+
+    trait :notified do
+      notified_at { 10.seconds.ago }
+    end
+
+    trait :resolved do
+      notified_at { 20.seconds.ago }
+      resolved_at { 5.seconds.ago }
+      user_reply { "Yes, accept it." }
+    end
+
+    trait :timed_out do
+      notified_at { 60.seconds.ago }
+      timed_out { true }
+    end
+  end
 end

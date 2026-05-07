@@ -19,6 +19,10 @@ class VapiAdapter
     new(call_plan:).call
   end
 
+  def self.send_message(vapi_call_id:, message:)
+    new(call_plan: nil).send_inject_message(vapi_call_id, message)
+  end
+
   def initialize(call_plan:)
     @call_plan = call_plan
   end
@@ -26,6 +30,13 @@ class VapiAdapter
   def call
     response = post("/call/phone", build_call_payload)
     { call_id: response.fetch("id") }
+  end
+
+  def send_inject_message(vapi_call_id, message)
+    post("/call/#{vapi_call_id}/message", {
+      type: "add-message",
+      message: { role: "system", content: message }
+    })
   end
 
   private
