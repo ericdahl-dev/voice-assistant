@@ -86,9 +86,14 @@ class VapiAdapter
     sections = []
 
     sections << "You are an AI assistant placing a call on behalf of #{@call_plan.caller_name}."
-    sections << "Your goal: #{@call_plan.goal}"
-    sections << "IMPORTANT: Start by asking if it's a good time. Once the recipient confirms they are ready, " \
-                "then naturally work toward your goal. Do not state the goal verbatim — phrase it conversationally."
+    sections << <<~GOAL
+      Your instructions (interpret these as intent, not a script — the user may have written notes, bullet points, or fragments):
+      #{@call_plan.goal}
+
+      Understand what they are trying to accomplish and handle it naturally in conversation.
+      Once the recipient confirms they are ready to talk, work through the intent above conversationally.
+      Never read the instructions verbatim. Rephrase everything as natural spoken language.
+    GOAL
 
     if @call_plan.allowed_to_share.any?
       sections << "You may share the following information if asked:\n" +
