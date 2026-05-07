@@ -10,6 +10,8 @@ class CallPlan < ApplicationRecord
   validates :goal, presence: true
   validates :status, inclusion: { in: STATUSES }
 
+  before_validation :normalize_phone
+
   attribute :allowed_to_share, :jsonb, default: []
   attribute :questions_to_ask, :jsonb, default: []
   attribute :allowed_decisions, :jsonb, default: []
@@ -34,4 +36,19 @@ class CallPlan < ApplicationRecord
   end
 
   class AlreadyApprovedError < StandardError; end
+
+  private
+
+  def normalize_phone
+    return if target_phone.blank?
+
+    digits = target_phone.gsub(/\D/, "")
+    self.target_phone = if digits.length == 10
+      "+1#{digits}"
+    elsif digits.length == 11 && digits.start_with?("1")
+      "+#{digits}"
+    else
+      target_phone
+    end
+  end
 end
