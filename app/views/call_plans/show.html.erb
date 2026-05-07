@@ -139,6 +139,13 @@
             class: "btn-primary btn-lg" %>
       <%= link_to "Edit plan", edit_delegation_call_plan_path(@delegation), class: "btn-secondary btn-lg" %>
     <% end %>
+    <% if @call_plan.approved? && !@active_session %>
+      <%= button_to "Run again",
+            run_again_delegation_call_plan_path(@delegation),
+            method: :post,
+            data: { turbo_confirm: "Place this call again using the same plan?" },
+            class: "btn-secondary" %>
+    <% end %>
     <%= link_to "← All delegations", delegations_path, class: "btn-ghost ml-auto" %>
   </div>
 

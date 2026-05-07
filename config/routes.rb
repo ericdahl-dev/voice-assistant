@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   resources :delegations, only: [ :index, :show, :new, :create ] do
     resource :call_plan, only: [ :new, :create, :show, :edit, :update ] do
       post :approve, on: :member
+      post :run_again, on: :member
     end
   end
 
