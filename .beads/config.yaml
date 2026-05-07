@@ -52,3 +52,5 @@
 # - linear.api-key
 # - github.org
 # - github.repo
+
+# github.token: set via GITHUB_TOKEN env var — do not commit
