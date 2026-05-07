@@ -1,0 +1,3 @@
+<h1>Voice Assistant</h1>
+<p>Welcome, <%= current_user.email %>. Your personal outbound call assistant.</p>
+<p><%= link_to "Sign out", destroy_user_session_path, data: {turbo_method: :delete} %></p>

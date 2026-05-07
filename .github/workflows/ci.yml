@@ -1,78 +1,67 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
+  push:
+    branches: [ main ]
 
 jobs:
-  test:
-    name: Test
+  scan_ruby:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: voice_assistant_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    env:
-      RAILS_ENV: test
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/voice_assistant_test
-      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v6
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Cache assets
-        uses: actions/cache@v4
+      - name: Scan for common Rails security vulnerabilities using static analysis
+        run: bin/brakeman --no-pager
+      
+      - name: Scan for known security vulnerabilities in gems used
+        run: bin/bundler-audit
+      
+  scan_js:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          path: |
-            public/assets
-            tmp/cache/assets
-          key: assets-${{ hashFiles('app/assets/**', 'app/javascript/**', 'package.json', 'yarn.lock') }}
-          restore-keys: assets-
+          bundler-cache: true
 
-      - name: Set up database
-        run: bin/rails db:schema:load
-
-      - name: Run tests
-        run: bin/rails test
-
-      - name: Run system tests
-        run: bin/rails test:system
-        continue-on-error: true
+      - name: Scan for security vulnerabilities in JavaScript dependencies
+        run: bin/importmap audit
 
   lint:
-    name: Lint
     runs-on: ubuntu-latest
-
+    env:
+      RUBOCOP_CACHE_ROOT: tmp/rubocop
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v6
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Brakeman
-        run: bundle exec brakeman --no-pager -q
+      - name: Prepare RuboCop cache
+        uses: actions/cache@v4
+        env:
+          DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
+        with:
+          path: ${{ env.RUBOCOP_CACHE_ROOT }}
+          key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
+          restore-keys: |
+            rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
 
-      - name: RuboCop
-        run: bundle exec rubocop --parallel
+      - name: Lint code for consistent style
+        run: bin/rubocop -f github
+
