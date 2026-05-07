@@ -38,5 +38,13 @@ FactoryBot.define do
   factory :call_session do
     association :call_plan, factory: [ :call_plan, :approved ]
     status { "drafted" }
+
+    trait :completed do
+      status { "completed" }
+    end
+
+    trait :voicemail do
+      status { "voicemail" }
+    end
   end
 end
