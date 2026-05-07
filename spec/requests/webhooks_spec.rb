@@ -5,8 +5,9 @@ RSpec.describe "POST /webhooks/vapi", type: :request do
   let(:call_plan) { create(:call_plan, :approved) }
   let(:call_session) { create(:call_session, call_plan: call_plan, status: "dialing", vapi_call_id: "vapi-abc") }
 
-  def post_event(payload, token: secret)
-    body = payload.to_json
+  # Vapi wraps all server messages in a top-level "message" key
+  def post_event(message_payload, token: secret)
+    body = { "message" => message_payload }.to_json
     headers = { "Content-Type" => "application/json" }
     headers["Authorization"] = "Bearer #{token}" if token
     post "/webhooks/vapi", params: body, headers: headers
@@ -18,12 +19,12 @@ RSpec.describe "POST /webhooks/vapi", type: :request do
   end
 
   it "returns 200 for valid token" do
-    post_event({ "type" => "call.connected", "call" => { "id" => call_session.vapi_call_id } })
+    post_event({ "type" => "status-update", "call" => { "id" => call_session.vapi_call_id }, "status" => "ringing" })
     expect(response).to have_http_status(:ok)
   end
 
   it "returns 401 for invalid token" do
-    post_event({ "type" => "call.connected", "call" => { "id" => call_session.vapi_call_id } }, token: "wrongtoken")
+    post_event({ "type" => "status-update", "call" => { "id" => call_session.vapi_call_id }, "status" => "ringing" }, token: "wrongtoken")
     expect(response).to have_http_status(:unauthorized)
   end
 
@@ -34,20 +35,20 @@ RSpec.describe "POST /webhooks/vapi", type: :request do
     expect(response).to have_http_status(:bad_request)
   end
 
-  it "processes call.connected event" do
-    post_event({ "type" => "call.connected", "call" => { "id" => call_session.vapi_call_id } })
+  it "processes status-update in-progress → connected" do
+    post_event({ "type" => "status-update", "call" => { "id" => call_session.vapi_call_id }, "status" => "in-progress" })
     expect(call_session.reload.status).to eq("connected")
   end
 
-  it "processes call.ended and completes from connected" do
+  it "processes end-of-call-report and completes from connected" do
     call_session.update!(status: "connected")
-    post_event({ "type" => "call.ended", "call" => { "id" => call_session.vapi_call_id } })
+    post_event({ "type" => "end-of-call-report", "call" => { "id" => call_session.vapi_call_id } })
     expect(call_session.reload.status).to eq("completed")
   end
 
-  it "processes call.ended and sets voicemail" do
+  it "processes end-of-call-report and sets voicemail" do
     call_session.update!(status: "connected")
-    post_event({ "type" => "call.ended", "call" => { "id" => call_session.vapi_call_id, "endedReason" => "voicemail" } })
+    post_event({ "type" => "end-of-call-report", "call" => { "id" => call_session.vapi_call_id, "endedReason" => "voicemail" } })
     expect(call_session.reload.status).to eq("voicemail")
   end
 
@@ -56,10 +57,9 @@ RSpec.describe "POST /webhooks/vapi", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
-  it "is idempotent for duplicate events" do
-    call_session.update!(status: "connected")
-    post_event({ "type" => "call.connected", "call" => { "id" => call_session.vapi_call_id } })
-    post_event({ "type" => "call.connected", "call" => { "id" => call_session.vapi_call_id } })
+  it "is idempotent for duplicate status-update events" do
+    post_event({ "type" => "status-update", "call" => { "id" => call_session.vapi_call_id }, "status" => "in-progress" })
+    post_event({ "type" => "status-update", "call" => { "id" => call_session.vapi_call_id }, "status" => "in-progress" })
     expect(call_session.reload.status).to eq("connected")
   end
 end

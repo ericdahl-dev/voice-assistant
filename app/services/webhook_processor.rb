@@ -90,7 +90,7 @@ class WebhookProcessor
 
     @session.with_lock do
       existing = @session.transcript.presence
-      @session.update!(transcript: [existing, chunk].compact.join(" "))
+      @session.update!(transcript: [ existing, chunk ].compact.join(" "))
     end
   end
 

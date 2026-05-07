@@ -9,7 +9,7 @@ RSpec.describe WebhookProcessor do
     {
       "message" => {
         "type" => type,
-        "call" => {"id" => call_session.vapi_call_id}
+        "call" => { "id" => call_session.vapi_call_id }
       }.merge(extra_message)
     }
   end
@@ -23,14 +23,14 @@ RSpec.describe WebhookProcessor do
 
     context "with unknown vapi_call_id" do
       it "does nothing" do
-        evt = {"message" => {"type" => "status-update", "call" => {"id" => "not-found"}, "status" => "ringing"}}
+        evt = { "message" => { "type" => "status-update", "call" => { "id" => "not-found" }, "status" => "ringing" } }
         expect { described_class.new(evt).process }.not_to(change { CallSession.count })
       end
     end
 
     context "with missing call.id" do
       it "does nothing" do
-        expect { described_class.new({"message" => {"type" => "status-update"}}).process }.not_to raise_error
+        expect { described_class.new({ "message" => { "type" => "status-update" } }).process }.not_to raise_error
       end
     end
 
@@ -80,7 +80,7 @@ RSpec.describe WebhookProcessor do
 
         it "transitions to voicemail" do
           described_class.new(event("end-of-call-report",
-            "call" => {"id" => call_session.vapi_call_id, "endedReason" => "voicemail"})).process
+            "call" => { "id" => call_session.vapi_call_id, "endedReason" => "voicemail" })).process
           expect(call_session.reload.status).to eq("voicemail")
         end
       end
@@ -90,14 +90,14 @@ RSpec.describe WebhookProcessor do
 
         it "saves the transcript from the artifact" do
           described_class.new(event("end-of-call-report",
-            "artifact" => {"transcript" => "Hello there."})).process
+            "artifact" => { "transcript" => "Hello there." })).process
           expect(call_session.reload.transcript).to eq("Hello there.")
         end
 
         it "does not overwrite an existing transcript" do
           call_session.update!(transcript: "existing")
           described_class.new(event("end-of-call-report",
-            "artifact" => {"transcript" => "new"})).process
+            "artifact" => { "transcript" => "new" })).process
           expect(call_session.reload.transcript).to eq("existing")
         end
       end
@@ -151,7 +151,7 @@ RSpec.describe WebhookProcessor do
       it "transitions to needs_user" do
         described_class.new(event("tool-calls",
           "toolCallList" => [
-            {"name" => "escalate", "parameters" => {"question" => "Do you authorise payment?"}}
+            { "name" => "escalate", "parameters" => { "question" => "Do you authorise payment?" } }
           ])).process
         expect(call_session.reload.status).to eq("needs_user")
       end
@@ -159,7 +159,7 @@ RSpec.describe WebhookProcessor do
       it "ignores non-escalate tool calls" do
         described_class.new(event("tool-calls",
           "toolCallList" => [
-            {"name" => "lookupOrder", "parameters" => {}}
+            { "name" => "lookupOrder", "parameters" => {} }
           ])).process
         expect(call_session.reload.status).to eq("in_conversation")
       end
