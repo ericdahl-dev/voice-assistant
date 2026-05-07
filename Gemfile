@@ -34,7 +34,7 @@ gem "solid_cable"
 gem "good_job"
 
 # OpenAI API client
-gem "ruby-openai", "~> 7.0"
+gem "ruby-openai", "~> 8.3"
 
 # PostHog analytics
 gem "posthog-ruby"
