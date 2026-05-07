@@ -1,0 +1,68 @@
+<%# Live CallSession status panel — Turbo Stream target: live_session_STATUS_ID %>
+<% status_labels = {
+  "drafted"        => ["Waiting to dial", "badge-slate"],
+  "queued"         => ["Queued", "badge-amber"],
+  "dialing"        => ["Dialing…", "badge-amber"],
+  "connected"      => ["Connected", "badge-blue"],
+  "in_conversation" => ["In conversation", "badge-blue"],
+  "needs_user"     => ["Needs your input", "badge-purple"],
+  "voicemail"      => ["Left voicemail", "badge-slate"],
+  "completed"      => ["Completed", "badge-green"],
+  "failed"         => ["Failed", "badge-red"]
+} %>
+<% label, badge = status_labels.fetch(call_session.status, [call_session.status.humanize, "badge-slate"]) %>
+<% live = !call_session.terminal? %>
+
+<div id="<%= dom_id(call_session, :live) %>" class="rounded-lg border <%= live ? "border-brand-300 dark:border-brand-700 bg-brand-50/40 dark:bg-brand-900/20" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800" %> p-4">
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3 min-w-0">
+      <% if live %>
+        <span class="relative flex h-2.5 w-2.5 shrink-0">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-500"></span>
+        </span>
+      <% else %>
+        <span class="h-2.5 w-2.5 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0"></span>
+      <% end %>
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+          Session #<%= call_session.id %>
+        </p>
+        <% if call_session.started_at %>
+          <p class="text-xs text-slate-400 mt-0.5">
+            Started <%= call_session.started_at.strftime("%l:%M %p") %>
+            <% if call_session.ended_at %>
+              — Ended <%= call_session.ended_at.strftime("%l:%M %p") %>
+            <% end %>
+          </p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 shrink-0">
+      <span class="<%= badge %>"><%= label %></span>
+      <%= link_to "View →", call_session_path(call_session), class: "text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 font-medium" %>
+    </div>
+  </div>
+
+  <% if call_session.needs_user? %>
+    <% pending_escalation = call_session.escalations.unresolved.first %>
+    <% if pending_escalation %>
+      <div class="mt-3 rounded-md bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-3 py-2 flex items-start gap-2">
+        <svg class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+        <p class="text-xs text-amber-800 dark:text-amber-300"><%= pending_escalation.question %></p>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if call_session.in_conversation? && call_session.transcript.present? %>
+    <div class="mt-3 border-t border-slate-100 dark:border-slate-700 pt-3">
+      <p class="text-xs text-slate-400 uppercase tracking-wide mb-1">Live transcript</p>
+      <p id="<%= dom_id(call_session, :transcript) %>" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3">
+        <%= call_session.transcript %>
+      </p>
+    </div>
+  <% end %>
+</div>
