@@ -1,0 +1,69 @@
+<h1>Review your call plan</h1>
+
+<% if @call_plan.approved? %>
+  <p><strong>Status: Approved</strong> &mdash; approved on <%= @call_plan.approved_at.strftime("%b %-d at %l:%M %p") %></p>
+<% else %>
+  <p>Status: Draft &mdash; review the details below, then approve when ready.</p>
+<% end %>
+
+<dl>
+  <dt>Calling</dt>
+  <dd><%= @call_plan.target_name %> at <%= @call_plan.target_phone %></dd>
+
+  <dt>Caller identity</dt>
+  <dd>The AI will identify the caller as <%= @call_plan.caller_name %></dd>
+
+  <dt>Goal</dt>
+  <dd><%= @call_plan.goal %></dd>
+
+  <% if @call_plan.fallback.present? %>
+    <dt>Fallback</dt>
+    <dd><%= @call_plan.fallback %></dd>
+  <% end %>
+
+  <% if @call_plan.allowed_to_share.any? %>
+    <dt>Allowed to share</dt>
+    <dd>
+      <ul>
+        <% @call_plan.allowed_to_share.each do |item| %>
+          <li><%= item %></li>
+        <% end %>
+      </ul>
+    </dd>
+  <% end %>
+
+  <% if @call_plan.questions_to_ask.any? %>
+    <dt>Questions to ask</dt>
+    <dd>
+      <ul>
+        <% @call_plan.questions_to_ask.each do |q| %>
+          <li><%= q %></li>
+        <% end %>
+      </ul>
+    </dd>
+  <% end %>
+
+  <% if @call_plan.forbidden_actions.any? %>
+    <dt>Forbidden — the AI must never</dt>
+    <dd>
+      <ul>
+        <% @call_plan.forbidden_actions.each do |item| %>
+          <li><%= item %></li>
+        <% end %>
+      </ul>
+    </dd>
+  <% end %>
+</dl>
+
+<% unless @call_plan.approved? %>
+  <p>
+    <%= link_to "Edit call plan", edit_delegation_call_plan_path(@delegation) %>
+  </p>
+
+  <%= button_to "Approve and send",
+        approve_delegation_call_plan_path(@delegation),
+        method: :post,
+        data: { turbo_confirm: "Are you sure? Once approved the AI will place this call." } %>
+<% end %>
+
+<p><%= link_to "← All delegations", delegations_path %></p>

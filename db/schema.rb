@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_07_025413) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_07_025938) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -31,6 +31,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_025413) do
     t.datetime "updated_at", null: false
     t.index ["delegation_id"], name: "index_call_plans_on_delegation_id"
     t.index ["status"], name: "index_call_plans_on_status"
+  end
+
+  create_table "call_templates", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "default_allowed_decisions", default: [], null: false
+    t.jsonb "default_allowed_to_share", default: [], null: false
+    t.text "default_fallback"
+    t.jsonb "default_forbidden_actions", default: [], null: false
+    t.jsonb "default_questions_to_ask", default: [], null: false
+    t.text "description", null: false
+    t.text "goal_template", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "variable_schema", default: [], null: false
   end
 
   create_table "delegations", force: :cascade do |t|
