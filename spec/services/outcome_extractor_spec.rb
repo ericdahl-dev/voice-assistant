@@ -155,4 +155,38 @@ RSpec.describe OutcomeExtractor, type: :service do
       end
     end
   end
+
+  describe "terminated_off_topic outcome" do
+    let(:off_topic_response) do
+      {
+        "choices" => [
+          {
+            "message" => {
+              "content" => JSON.generate({
+                "status" => "terminated_off_topic",
+                "outcome" => "Call ended because recipient repeatedly steered conversation off-topic.",
+                "follow_up_needed" => true,
+                "summary" => "The agent redirected twice but the recipient persisted. Call ended gracefully.",
+                "important_details" => [],
+                "confidence" => "high"
+              })
+            }
+          }
+        ]
+      }
+    end
+
+    before { stub_openai(off_topic_response) }
+
+    it "passes through terminated_off_topic status" do
+      result = described_class.call(transcript: "...", call_plan: call_plan)
+      expect(result["status"]).to eq("terminated_off_topic")
+    end
+
+    it "system prompt lists terminated_off_topic as valid status" do
+      extractor = described_class.new(transcript: "...", call_plan: call_plan)
+      prompt = extractor.send(:system_prompt)
+      expect(prompt).to include("terminated_off_topic")
+    end
+  end
 end
