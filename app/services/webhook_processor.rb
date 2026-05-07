@@ -74,6 +74,14 @@ class WebhookProcessor
 
   def handle_escalation_triggered
     safely_transition_to("needs_user")
+    question = @event.dig("escalation", "question").presence ||
+      @event.dig("message", "content").presence ||
+      "The AI needs your input to continue."
+    escalation = @session.escalations.create!(question: question)
+    user = @session.call_plan.delegation.user
+    EscalationNotifier.notify(escalation: escalation, user: user)
+  rescue => e
+    Rails.logger.error("[WebhookProcessor] EscalationNotifier failed: #{e.message}")
   end
 
   def safely_transition_to(new_status)

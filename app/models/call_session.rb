@@ -1,6 +1,7 @@
 class CallSession < ApplicationRecord
   include ActionView::RecordIdentifier
   belongs_to :call_plan
+  has_many :escalations, dependent: :destroy
 
   # ---------------------------------------------------------------------------
   # State machine
