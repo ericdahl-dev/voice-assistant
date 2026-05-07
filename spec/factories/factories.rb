@@ -43,12 +43,36 @@ FactoryBot.define do
     association :call_plan, factory: [ :call_plan, :approved ]
     status { "drafted" }
 
-    trait :completed do
-      status { "completed" }
-    end
-
     trait :voicemail do
       status { "voicemail" }
+      vapi_call_id { "vapi-#{SecureRandom.hex(6)}" }
+    end
+
+    trait :completed do
+      status { "completed" }
+      vapi_call_id { "vapi-#{SecureRandom.hex(6)}" }
     end
   end
+
+  factory :escalation do
+    association :call_session
+    question { "Should I accept the extended warranty offer?" }
+    timed_out { false }
+
+    trait :notified do
+      notified_at { 10.seconds.ago }
+    end
+
+    trait :resolved do
+      notified_at { 20.seconds.ago }
+      resolved_at { 5.seconds.ago }
+      user_reply { "Yes, accept it." }
+    end
+
+    trait :timed_out do
+      notified_at { 60.seconds.ago }
+      timed_out { true }
+    end
+  end
+
 end

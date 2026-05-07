@@ -17,6 +17,9 @@ Rails.application.routes.draw do
   resources :call_sessions, only: [ :show ] do
     post :retry, on: :member
   end
+  resources :escalations, only: [] do
+    post :reply, on: :member
+  end
 
   root to: "home#index"
 end

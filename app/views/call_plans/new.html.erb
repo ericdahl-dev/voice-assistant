@@ -16,7 +16,7 @@
     </div>
   </div>
 
-  <%= form_with model: [@delegation, @call_plan], class: "space-y-6" do |f| %>
+  <%= form_with model: [@delegation, @call_plan], url: delegation_call_plan_path(@delegation), class: "space-y-6" do |f| %>
     <%= render "call_plans/form_fields", f: f, call_plan: @call_plan %>
 
     <div class="flex items-center gap-3 pt-2">

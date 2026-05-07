@@ -33,6 +33,9 @@ gem "solid_cable"
 # Background jobs with dashboard [https://github.com/bensheldon/good_job]
 gem "good_job"
 
+# OpenAI API client
+gem "ruby-openai", "~> 7.0"
+
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
@@ -53,6 +56,7 @@ group :development, :test do
   gem "dotenv-rails"
   gem "rspec-rails"
   gem "factory_bot_rails"
+  gem "parallel_tests"
 end
 
 group :test do
