@@ -69,7 +69,7 @@ class WebhookProcessor
       @session.update!(transcript: artifact_transcript)
     end
 
-    new_status = if end_reason&.include?("voicemail")
+    new_status = if end_reason&.include?("voicemail") || @session.call_plan.voicemail_only?
       "voicemail"
     else
       currently_connected? ? "completed" : "failed"
