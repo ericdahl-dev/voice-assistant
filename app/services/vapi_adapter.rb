@@ -12,6 +12,9 @@ class VapiAdapter
   DISCLOSURE_TEMPLATE = "Hi, I'm an AI assistant calling on behalf of %<caller_name>s. " \
                         "I'm calling to %<goal>s. Is it okay if I continue?"
 
+  VOICEMAIL_TEMPLATE = "Hi, this is an AI assistant calling on behalf of %<caller_name>s. " \
+                       "I'm calling to %<goal>s. Please call us back at your earliest convenience. Thank you."
+
   def self.call(call_plan:)
     new(call_plan:).call
   end
@@ -41,7 +44,7 @@ class VapiAdapter
   def build_assistant_config
     {
       name: "Voice Assistant for #{@call_plan.caller_name}",
-      firstMessage: disclosure_message,
+      firstMessage: first_message,
       model: {
         provider: "openai",
         model: "gpt-4o",
@@ -56,10 +59,16 @@ class VapiAdapter
     }
   end
 
-  def disclosure_message
-    format(DISCLOSURE_TEMPLATE,
-      caller_name: @call_plan.caller_name,
-      goal: @call_plan.goal)
+  def first_message
+    if @call_plan.voicemail_only?
+      format(VOICEMAIL_TEMPLATE,
+        caller_name: @call_plan.caller_name,
+        goal: @call_plan.goal)
+    else
+      format(DISCLOSURE_TEMPLATE,
+        caller_name: @call_plan.caller_name,
+        goal: @call_plan.goal)
+    end
   end
 
   def build_system_prompt
