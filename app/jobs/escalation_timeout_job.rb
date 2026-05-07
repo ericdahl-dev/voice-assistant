@@ -15,7 +15,7 @@ class EscalationTimeoutJob < ApplicationJob
     fallback = session.call_plan.fallback.presence || "End the call politely."
 
     message = "The user did not reply in time. Please execute the fallback: #{fallback}"
-    VapiAdapter.send_message(vapi_call_id: session.vapi_call_id, message: message)
+    VoiceAgentProvider.send_message(vapi_call_id: session.vapi_call_id, message: message)
   rescue VoiceAgentProvider::ApiError => e
     Rails.logger.error("[EscalationTimeoutJob] #{e.message}")
   end

@@ -149,13 +149,6 @@ class VapiAdapter
     msg
   end
 
-  def send_inject_message(vapi_call_id, message)
-    post("/call/#{vapi_call_id}/message", {
-      type: "add-message",
-      message: { role: "system", content: message }
-    })
-  end
-
   def post(path, payload)
     uri = URI("#{VAPI_BASE_URL}#{path}")
     request = Net::HTTP::Post.new(uri, headers)
