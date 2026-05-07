@@ -7,7 +7,7 @@ on:
 jobs:
   create_branch:
     name: Create Neon branch
-    if: github.event.action != 'closed' && github.actor != 'dependabot[bot]'
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
 
     outputs:
@@ -24,6 +24,11 @@ jobs:
         env:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
         run: |
+          if [ -z "$NEON_API_KEY" ]; then
+            echo "NEON_API_KEY not available, skipping Neon branch creation"
+            echo "db_url=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           BRANCH_NAME="pr-${{ github.event.pull_request.number }}"
           neonctl branches create \
             --project-id ${{ vars.NEON_PROJECT_ID }} \
@@ -48,7 +53,7 @@ jobs:
   test:
     name: Test on preview branch
     needs: create_branch
-    if: github.actor != 'dependabot[bot]' && needs.create_branch.outputs.database_url != ''
+    if: needs.create_branch.result == 'success' && needs.create_branch.outputs.database_url != ''
     runs-on: ubuntu-latest
 
     env:
@@ -73,7 +78,7 @@ jobs:
 
   delete_branch:
     name: Delete Neon branch
-    if: github.event.action == 'closed' && github.actor != 'dependabot[bot]'
+    if: github.event.action == 'closed'
     runs-on: ubuntu-latest
 
     steps:
