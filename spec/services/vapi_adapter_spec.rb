@@ -26,9 +26,9 @@ RSpec.describe VapiAdapter, type: :service do
     end
   end
 
-  describe "disclosure message" do
+  describe "first_message (disclosure)" do
     it "always includes caller name and goal" do
-      msg = adapter.send(:disclosure_message)
+      msg = adapter.send(:first_message)
       expect(msg).to include(call_plan.caller_name)
       expect(msg).to include(call_plan.goal)
     end
@@ -48,6 +48,32 @@ RSpec.describe VapiAdapter, type: :service do
 
     it "includes allowed-to-share facts" do
       expect(prompt).to include("My first name")
+    end
+  end
+  describe "voicemail_only path" do
+    let(:call_plan) { create(:call_plan, :approved, :voicemail_only) }
+    let(:adapter) { described_class.new(call_plan:) }
+
+    before do
+      allow(adapter).to receive(:vapi_phone_number_id).and_return("phone-num-stub")
+      allow(adapter).to receive(:api_key).and_return("key-stub")
+    end
+
+    it "firstMessage does not contain the consent question" do
+      msg = adapter.send(:first_message)
+      expect(msg).not_to include("Is it okay if I continue?")
+    end
+
+    it "firstMessage includes caller name, goal, and callback request" do
+      msg = adapter.send(:first_message)
+      expect(msg).to include(call_plan.caller_name)
+      expect(msg).to include(call_plan.goal)
+      expect(msg).to include("call us back")
+    end
+
+    it "build_assistant_config uses the voicemail firstMessage" do
+      config = adapter.send(:build_assistant_config)
+      expect(config[:firstMessage]).to include("call us back")
     end
   end
   describe "disclosure enforcement" do
