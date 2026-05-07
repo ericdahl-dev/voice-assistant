@@ -6,7 +6,7 @@ RSpec.describe PlaceCallJob, type: :job do
   describe "#perform" do
     context "on success" do
       before do
-        allow(VapiAdapter).to receive(:call).and_return({call_id: "vapi-xyz-789"})
+        allow(VapiAdapter).to receive(:call).and_return({ call_id: "vapi-xyz-789" })
       end
 
       it "creates a CallSession and transitions to dialing" do
@@ -33,7 +33,7 @@ RSpec.describe PlaceCallJob, type: :job do
 
     context "idempotency" do
       it "does not create a second session if one already exists past drafted" do
-        allow(VapiAdapter).to receive(:call).and_return({call_id: "vapi-xyz-789"})
+        allow(VapiAdapter).to receive(:call).and_return({ call_id: "vapi-xyz-789" })
 
         described_class.perform_now(call_plan.id)
         described_class.perform_now(call_plan.id)

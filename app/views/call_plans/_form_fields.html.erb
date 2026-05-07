@@ -1,0 +1,76 @@
+<%# Shared form fields for CallPlan — used by new and edit %>
+
+<% if call_plan.errors.any? %>
+  <div class="error-list mb-6" role="alert">
+    <p class="font-semibold mb-1">
+      <%= I18n.t("errors.messages.not_saved", count: call_plan.errors.count, resource: "call plan") %>
+    </p>
+    <ul class="list-disc list-inside space-y-0.5">
+      <% call_plan.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="space-y-6">
+
+  <%# ── Who are we calling? ── %>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Who are we calling?</h2>
+    </div>
+    <div class="card-body grid sm:grid-cols-2 gap-5">
+      <div class="form-field">
+        <%= f.label :target_name, "Business or person name", class: "form-label" %>
+        <%= f.text_field :target_name, placeholder: "e.g. Maplewood Auto", class: "form-input" %>
+      </div>
+      <div class="form-field">
+        <%= f.label :target_phone, "Phone number", class: "form-label" %>
+        <%= f.telephone_field :target_phone, placeholder: "e.g. 555-867-5309", class: "form-input" %>
+      </div>
+    </div>
+  </div>
+
+  <%# ── About the caller ── %>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Caller identity</h2>
+    </div>
+    <div class="card-body">
+      <div class="form-field max-w-sm">
+        <%= f.label :caller_name, "Your first name", class: "form-label" %>
+        <p class="form-hint">The AI will introduce itself using this name.</p>
+        <%= f.text_field :caller_name, placeholder: "e.g. Alex", class: "form-input mt-1" %>
+      </div>
+    </div>
+  </div>
+
+  <%# ── What should the AI do? ── %>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Instructions for the AI</h2>
+    </div>
+    <div class="card-body space-y-5">
+      <div class="form-field">
+        <%= f.label :goal, "Goal", class: "form-label" %>
+        <p class="form-hint">What the AI should accomplish on the call.</p>
+        <%= f.text_area :goal, rows: 3, placeholder: "e.g. Ask whether my vehicle is ready for pickup", class: "form-textarea mt-1" %>
+      </div>
+      <div class="form-field">
+        <%= f.label :fallback, "Fallback", class: "form-label" %>
+        <p class="form-hint">What to do if the goal can't be achieved (e.g. nobody answers).</p>
+        <%= f.text_area :fallback, rows: 2, placeholder: "e.g. Leave a voicemail asking them to call back", class: "form-textarea mt-1" %>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%# Hidden array fields — preserved across edits %>
+<% (call_plan.allowed_to_share || []).each do |item| %>
+  <%= f.hidden_field :allowed_to_share, value: item, multiple: true %>
+<% end %>
+<% (call_plan.forbidden_actions || []).each do |item| %>
+  <%= f.hidden_field :forbidden_actions, value: item, multiple: true %>
+<% end %>

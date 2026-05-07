@@ -45,8 +45,8 @@ RSpec.describe CallPlan, type: :model do
 
   describe "jsonb round-trip" do
     it "persists and reloads array values" do
-      plan = create(:call_plan, allowed_to_share: ["my name", "appointment date"])
-      expect(plan.reload.allowed_to_share).to eq(["my name", "appointment date"])
+      plan = create(:call_plan, allowed_to_share: [ "my name", "appointment date" ])
+      expect(plan.reload.allowed_to_share).to eq([ "my name", "appointment date" ])
     end
   end
 end

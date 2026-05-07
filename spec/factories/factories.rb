@@ -14,10 +14,10 @@ FactoryBot.define do
     description { "Call an auto repair shop to check if a vehicle is ready." }
     goal_template { "Ask whether the vehicle is ready for pickup." }
     variable_schema { [] }
-    default_allowed_to_share { ["Customer's first name"] }
-    default_questions_to_ask { ["Is the vehicle ready?"] }
+    default_allowed_to_share { [ "Customer's first name" ] }
+    default_questions_to_ask { [ "Is the vehicle ready?" ] }
     default_allowed_decisions { [] }
-    default_forbidden_actions { ["Approve new repairs", "Provide payment info"] }
+    default_forbidden_actions { [ "Approve new repairs", "Provide payment info" ] }
     default_fallback { "Leave a voicemail asking them to call back." }
   end
 
@@ -36,7 +36,7 @@ FactoryBot.define do
   end
 
   factory :call_session do
-    association :call_plan, factory: [:call_plan, :approved]
+    association :call_plan, factory: [ :call_plan, :approved ]
     status { "drafted" }
   end
 end
