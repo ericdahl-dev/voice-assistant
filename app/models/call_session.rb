@@ -54,6 +54,7 @@ class CallSession < ApplicationRecord
   # Broadcast a Turbo Stream update whenever the session changes state so the
   # dashboard can reflect progress without a full page reload.
   after_update_commit :broadcast_status_update, if: :saved_change_to_status?
+  after_update_commit :broadcast_outcome_update, if: :saved_change_to_outcome?
 
   STATUSES.each do |s|
     define_method(:"#{s}?") { status == s }
@@ -98,6 +99,15 @@ class CallSession < ApplicationRecord
       [ call_plan.delegation, :call_sessions ],
       target: dom_id(self),
       partial: "call_sessions/call_session",
+      locals: { call_session: self }
+    )
+  end
+
+  def broadcast_outcome_update
+    broadcast_replace_to(
+      [ call_plan.delegation, :call_sessions ],
+      target: "call_session_outcome_#{id}",
+      partial: "call_sessions/outcome",
       locals: { call_session: self }
     )
   end

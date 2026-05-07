@@ -1,0 +1,78 @@
+<%# Turbo Stream target for outcome — replaced by broadcast_outcome_update when ExtractOutcomeJob completes %>
+<div id="call_session_outcome_<%= call_session.id %>">
+  <% outcome = call_session.outcome %>
+
+  <% if outcome.present? %>
+    <%
+      status      = outcome["status"].to_s
+      confidence  = outcome["confidence"].to_s
+      follow_up   = outcome["follow_up_needed"]
+      details     = Array(outcome["important_details"])
+
+      status_badge = case status
+        when "completed"  then "badge-green"
+        when "voicemail"  then "badge-slate"
+        when "declined"   then "badge-slate"
+        when "failed"     then "badge-red"
+        else "badge-amber"
+      end
+
+      confidence_color = case confidence
+        when "high"   then "text-emerald-600 dark:text-emerald-400"
+        when "medium" then "text-amber-600 dark:text-amber-400"
+        else               "text-red-600 dark:text-red-400"
+      end
+    %>
+
+    <%# Follow-up banner %>
+    <% if follow_up %>
+      <div class="mb-4 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700 p-4 flex gap-3 items-start">
+        <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374l7.303-12.748c.866-1.5 3.032-1.5 3.898 0L21.303 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+        <div>
+          <p class="font-medium text-amber-800 dark:text-amber-300">You may need to follow up</p>
+          <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">The outcome was unclear or incomplete. Consider calling back manually.</p>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Outcome</h2>
+        <div class="flex items-center gap-2">
+          <span class="<%= status_badge %>"><%= status == "declined" ? "Business declined" : status.capitalize %></span>
+          <span class="text-xs <%= confidence_color %> font-medium"><%= confidence.capitalize %> confidence</span>
+        </div>
+      </div>
+
+      <p class="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3"><%= outcome["outcome"] %></p>
+      <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4"><%= outcome["summary"] %></p>
+
+      <% if details.any? %>
+        <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
+          <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Key details</p>
+          <ul class="space-y-1">
+            <% details.each do |detail| %>
+              <li class="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                <span class="text-emerald-500 shrink-0 mt-0.5">✓</span>
+                <%= detail %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+
+  <% elsif call_session.terminal? %>
+    <div id="call_session_outcome_<%= call_session.id %>" class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 mb-6">
+      <div class="flex items-center gap-3 text-slate-400">
+        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <p class="text-sm text-slate-500 dark:text-slate-400 italic">Analysing call…</p>
+      </div>
+    </div>
+  <% end %>
+</div>

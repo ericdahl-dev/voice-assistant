@@ -53,7 +53,9 @@ jobs:
   test:
     name: Test on preview branch
     needs: create_branch
-    if: needs.create_branch.result == 'success' && needs.create_branch.outputs.database_url != ''
+    if: |
+      needs.create_branch.result == 'success' &&
+      needs.create_branch.outputs.database_url != ''
     runs-on: ubuntu-latest
 
     env:
@@ -74,7 +76,7 @@ jobs:
         run: bin/rails db:schema:load
 
       - name: Run tests
-        run: bin/rails test
+        run: bundle exec rspec
 
   delete_branch:
     name: Delete Neon branch
