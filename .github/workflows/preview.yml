@@ -39,12 +39,16 @@ jobs:
             --database-name neondb \
             --output json 2>/dev/null | tr -d '"')
 
+          if [ -z "$DB_URL" ]; then
+            echo "Failed to get Neon connection string for branch $BRANCH_NAME"
+            exit 1
+          fi
           echo "db_url=$DB_URL" >> $GITHUB_OUTPUT
 
   test:
     name: Test on preview branch
     needs: create_branch
-    if: github.actor != 'dependabot[bot]'
+    if: github.actor != 'dependabot[bot]' && needs.create_branch.outputs.database_url != ''
     runs-on: ubuntu-latest
 
     env:
