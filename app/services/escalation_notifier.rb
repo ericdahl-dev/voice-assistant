@@ -3,7 +3,6 @@ require "json"
 
 class EscalationNotifier
   PUSHOVER_URL = "https://api.pushover.net/1/messages.json"
-  TIMEOUT_SECONDS = (ENV["ESCALATION_TIMEOUT_SECONDS"] || 45).to_i
 
   def self.notify(escalation:, user:)
     new(escalation: escalation, user: user).notify
@@ -20,7 +19,6 @@ class EscalationNotifier
     Rails.logger.error("[EscalationNotifier] Failed to notify: #{e.class}: #{e.message}")
   ensure
     @escalation.update!(notified_at: Time.current)
-    EscalationTimeoutJob.set(wait: TIMEOUT_SECONDS.seconds).perform_later(@escalation.id)
   end
 
   private

@@ -2,8 +2,6 @@ class EscalationsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_escalation
 
-  TIMEOUT_SECONDS = (ENV["ESCALATION_TIMEOUT_SECONDS"] || 45).to_i
-
   def reply
     if @escalation.timed_out?
       return redirect_to call_session_path(@escalation.call_session),
