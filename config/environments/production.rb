@@ -24,14 +24,11 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
-  # Assume all access to the app is happening through a SSL-terminating reverse proxy.
-  # config.assume_ssl = true
-
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
-
-  # Skip http-to-https redirect for the default health check endpoint.
-  # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
+  # TLS is terminated by the reverse proxy (e.g. Coolify / Traefik). Set RAILS_ASSUME_SSL=false
+  # only if the app is reached over plain HTTP end-to-end (not recommended).
+  config.assume_ssl = ActiveModel::Type::Boolean.new.cast(ENV.fetch("RAILS_ASSUME_SSL", true))
+  config.force_ssl = ActiveModel::Type::Boolean.new.cast(ENV.fetch("RAILS_FORCE_SSL", true))
+  config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT with the current request id as a default log tag.
   config.log_tags = [ :request_id ]
@@ -51,13 +48,24 @@ Rails.application.configure do
 
   # Use GoodJob for background jobs in production.
   config.active_job.queue_adapter = :good_job
+  # Jobs are executed by a separate `bundle exec good_job start` process (e.g. Coolify worker).
+  config.good_job.execution_mode = :external
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false
 
-  # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
+  # Public hostname (e.g. app.example.com). Used for mailer URLs and Host authorization.
+  app_host = ENV["APP_HOST"].presence
+  config.action_mailer.default_url_options = {
+    host: app_host || "example.com",
+    protocol: "https"
+  }
+  config.hosts << app_host if app_host
+  ENV.fetch("RAILS_ALLOWED_HOSTS", "").split(",").map(&:strip).reject(&:blank?).each do |host|
+    config.hosts << host
+  end
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {
@@ -77,13 +85,4 @@ Rails.application.configure do
 
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
-
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  #
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
