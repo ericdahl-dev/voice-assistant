@@ -75,8 +75,31 @@ bin/brakeman --no-pager -q # security scan
 
 ## Architecture Overview
 
-_Add a brief overview of your project architecture_
+Rails 8.1 monolith + Hotwire (Turbo + Stimulus). No separate frontend or API layer.
+
+- **Vapi** — managed voice platform for outbound calls (Phase 1–2). Configured via `VapiAdapter`.
+- **Twilio** — phone numbers imported into Vapi (Vapi's own numbers have a daily outbound limit).
+- **OpenAI gpt-4o** — conversation model inside Vapi; gpt-4o-mini for outcome extraction and goal summarization.
+- **GoodJob** — Postgres-backed background jobs (no Redis). Dashboard at `/good_job`.
+- **PostHog** — product analytics. JS snippet in layout + server-side events from controllers/jobs.
+- **Pushover + Twilio SMS** — escalation notifications sent in parallel.
+- **Kamal** — deployment.
+
+Webhooks from Vapi arrive at `POST /webhooks/vapi` → `WebhooksController` → `WebhookProcessor`.
+The webhook destination (`serverUrl`) is set per-call via `WEBHOOK_BASE_URL` env var or `credentials.vapi.webhook_base_url`.
+
+Key services: `VapiAdapter`, `WebhookProcessor`, `OutcomeExtractor` (via `ExtractOutcomeJob`), `EscalationNotifier`.
+
+See `CONTEXT.md` for domain language and `docs/adr/` for all architectural decisions.
 
 ## Conventions & Patterns
 
-_Add your project-specific conventions here_
+- **Linter**: `rubocop-rails-omakase` (strict). Always run `bin/rubocop --parallel -a` before committing — it autocorrects most issues. CI will fail on offenses.
+- **Tests**: RSpec + FactoryBot. Run `bundle exec rspec` before every PR.
+- **Security**: `bin/brakeman --no-pager -q` before every PR.
+- **Commits**: Include `Assisted-by: Claude Sonnet 4.6 via Crush <crush@charm.land>` trailer on AI-assisted commits.
+- **PRs**: Always squash-merge via `gh pr merge --auto --squash`. Branch protection requires passing CI.
+- **Credentials**: Use `bin/rails credentials:edit`. Never commit `config/master.key`. `credentials.yml.enc` is safe to commit.
+- **Gemfile.lock**: Always include `x86_64-linux` platform (`bundle lock --add-platform x86_64-linux`) so CI doesn't fail on GitHub Actions runners.
+- **Dev port**: Default is 3100 (set in `bin/dev`).
+- **Domain language**: Use terms from `CONTEXT.md` exactly. Never use the avoided synonyms.
