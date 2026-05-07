@@ -33,8 +33,8 @@ RSpec.describe CallPlan, type: :model do
         .and change { plan.approved_at }.from(nil)
     end
 
-    it "enqueues PlaceCallJob" do
-      expect { plan.approve! }.to have_enqueued_job(PlaceCallJob).with(plan.id, session_id: nil)
+    it "does not enqueue PlaceCallJob" do
+      expect { plan.approve! }.not_to have_enqueued_job(PlaceCallJob)
     end
 
     it "raises AlreadyApprovedError when called twice" do
@@ -46,10 +46,8 @@ RSpec.describe CallPlan, type: :model do
       let(:future) { 1.hour.from_now.change(usec: 0) }
       let(:plan) { create(:call_plan, scheduled_at: future) }
 
-      it "enqueues PlaceCallJob with wait_until" do
-        expect { plan.approve! }.to have_enqueued_job(PlaceCallJob)
-          .with(plan.id, session_id: nil)
-          .at(future)
+      it "does not enqueue PlaceCallJob" do
+        expect { plan.approve! }.not_to have_enqueued_job(PlaceCallJob)
       end
     end
   end

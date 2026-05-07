@@ -55,6 +55,7 @@ class CallPlansController < ApplicationController
     scheduled_at = parse_scheduled_at(params[:scheduled_at])
     @call_plan.update!(scheduled_at: scheduled_at) if scheduled_at
     @call_plan.approve!
+    @call_plan.enqueue_place_call_job
     notice = @call_plan.scheduled? ? "Call scheduled for #{@call_plan.scheduled_at.strftime("%B %-d at %l:%M %p %Z")}." : "Call plan approved! The AI will make the call shortly."
     redirect_to delegation_call_plan_path(@delegation), notice: notice
   rescue CallPlan::AlreadyApprovedError

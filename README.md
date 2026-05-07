@@ -196,6 +196,26 @@ Set `vapi_webhook_secret` in your credentials (or `VAPI_WEBHOOK_SECRET` env var)
 
 This app is configured for [Kamal](https://kamal-deploy.org) deployment. See `.kamal/` and `config/deploy.yml` for configuration.
 
+### Coolify (Dockerfile)
+
+Run **two** resources from the same image: **web** (default `CMD`, listens on **port 80**) and **worker** (`bundle exec good_job start`). Use an external Postgres URL (e.g. Neon) as `DATABASE_URL`.
+
+**Required / common environment variables**
+
+| Variable | Purpose |
+|----------|---------|
+| `RAILS_MASTER_KEY` | Decrypt `credentials.yml.enc` |
+| `DATABASE_URL` | Postgres (single DB; includes Solid Cache/Cable tables) |
+| `APP_HOST` | Public hostname (Host authorization + mailer URLs), e.g. `app.example.com` |
+| `WEBHOOK_BASE_URL` | HTTPS origin for Vapi (`https://app.example.com` — path `/webhooks/vapi` is appended in code) |
+| `VAPI_API_KEY`, `VAPI_PHONE_NUMBER_ID` | Vapi |
+| `OPENAI_API_KEY` | Outcome extraction + optional goal summarization |
+| `PUSHOVER_API_TOKEN`, `PUSHOVER_USER_KEY` | Escalation push |
+
+Optional: `RAILS_ALLOWED_HOSTS` (comma-separated extra hosts, e.g. `www.example.com`), `RAILS_ASSUME_SSL` / `RAILS_FORCE_SSL` (default `true`; set to `false` only if not behind TLS termination), `RAILS_LOG_LEVEL`, `JOB_CONCURRENCY`, `WEB_CONCURRENCY`, `RAILS_MAX_THREADS`.
+
+After first deploy, migrations run via `bin/docker-entrypoint` (`db:prepare` on web boot). Promote an admin user for `/good_job`.
+
 ```bash
 kamal setup    # first-time server provisioning
 kamal deploy   # deploy a new version
