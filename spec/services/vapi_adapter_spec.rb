@@ -103,4 +103,31 @@ RSpec.describe VapiAdapter, type: :service do
       expect(payload.dig(:assistant, :firstMessage)).to be_present
     end
   end
+
+  describe "serverUrl (webhook)" do
+    context "when WEBHOOK_BASE_URL is set" do
+      before { stub_const("ENV", ENV.to_h.merge("WEBHOOK_BASE_URL" => "https://myapp.example.com")) }
+
+      it "includes serverUrl pointing to /webhooks/vapi" do
+        config = adapter.send(:build_assistant_config)
+        expect(config[:serverUrl]).to eq("https://myapp.example.com/webhooks/vapi")
+      end
+
+      it "handles a trailing slash in the base URL" do
+        stub_const("ENV", ENV.to_h.merge("WEBHOOK_BASE_URL" => "https://myapp.example.com/"))
+        config = adapter.send(:build_assistant_config)
+        expect(config[:serverUrl]).to eq("https://myapp.example.com/webhooks/vapi")
+      end
+    end
+
+    context "when WEBHOOK_BASE_URL is not set" do
+      before { stub_const("ENV", ENV.to_h.except("WEBHOOK_BASE_URL")) }
+
+      it "omits serverUrl" do
+        allow(Rails.application.credentials).to receive(:dig).with(:vapi, :webhook_base_url).and_return(nil)
+        config = adapter.send(:build_assistant_config)
+        expect(config).not_to have_key(:serverUrl)
+      end
+    end
+  end
 end

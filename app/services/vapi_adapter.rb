@@ -53,7 +53,7 @@ class VapiAdapter
   end
 
   def build_assistant_config
-    {
+    config = {
       name: "Voice Assistant for #{@call_plan.caller_name}",
       firstMessage: first_message,
       model: {
@@ -68,6 +68,8 @@ class VapiAdapter
         voiceId: "alloy"
       }
     }
+    config[:serverUrl] = webhook_url if webhook_url.present?
+    config
   end
 
   def first_message
@@ -184,6 +186,14 @@ class VapiAdapter
       "Content-Type" => "application/json",
       "Authorization" => "Bearer #{api_key}"
     }
+  end
+
+  def webhook_url
+    base = Rails.application.credentials.dig(:vapi, :webhook_base_url) ||
+      ENV["WEBHOOK_BASE_URL"]
+    return nil if base.blank?
+
+    "#{base.chomp("/")}/webhooks/vapi"
   end
 
   def api_key
