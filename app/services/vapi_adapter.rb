@@ -19,6 +19,10 @@ class VapiAdapter
     new(call_plan:).call
   end
 
+  def self.send_message(vapi_call_id:, message:)
+    new(call_plan: nil).send_inject_message(vapi_call_id, message)
+  end
+
   def initialize(call_plan:)
     @call_plan = call_plan
   end
@@ -96,7 +100,28 @@ class VapiAdapter
       sections << "If you cannot accomplish the goal: #{@call_plan.fallback}"
     end
 
+    sections << voicemail_instructions
+
     sections.join("\n\n")
+  end
+
+  def voicemail_instructions
+    callback_info = @call_plan.allowed_to_share
+      .find { |s| s.match?(/phone|number|callback/i) }
+
+    msg = "If the call goes to voicemail, leave a brief, professional message. " \
+          "State your name, the purpose of the call (#{@call_plan.goal}), " \
+          "and ask them to call back."
+    msg += " You may share this callback number: #{callback_info}." if callback_info
+    msg += " Keep the message under 30 seconds. Do not repeat yourself."
+    msg
+  end
+
+  def send_inject_message(vapi_call_id, message)
+    post("/call/#{vapi_call_id}/message", {
+      type: "add-message",
+      message: { role: "system", content: message }
+    })
   end
 
   def post(path, payload)

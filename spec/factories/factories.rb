@@ -33,22 +33,20 @@ FactoryBot.define do
       status { "approved" }
       approved_at { Time.current }
     end
-
-    trait :voicemail_only do
-      voicemail_only { true }
-    end
   end
 
   factory :call_session do
     association :call_plan, factory: [ :call_plan, :approved ]
     status { "drafted" }
 
-    trait :completed do
-      status { "completed" }
-    end
-
     trait :voicemail do
       status { "voicemail" }
+      vapi_call_id { "vapi-#{SecureRandom.hex(6)}" }
+    end
+
+    trait :completed do
+      status { "completed" }
+      vapi_call_id { "vapi-#{SecureRandom.hex(6)}" }
     end
   end
 end
