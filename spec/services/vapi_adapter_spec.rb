@@ -27,10 +27,24 @@ RSpec.describe VapiAdapter, type: :service do
   end
 
   describe "first_message (disclosure)" do
-    it "always includes caller name and goal" do
+    it "includes caller name but not the raw goal" do
       msg = adapter.send(:first_message)
       expect(msg).to include(call_plan.caller_name)
-      expect(msg).to include(call_plan.goal)
+      expect(msg).not_to include(call_plan.goal)
+    end
+
+    it "says 'a quick question' when there is one question" do
+      msg = adapter.send(:first_message)
+      expect(msg).to include("a quick question")
+    end
+
+    context "when there are multiple questions" do
+      let(:call_plan) { create(:call_plan, :approved, questions_to_ask: [ "Q1?", "Q2?" ]) }
+
+      it "says 'a few quick questions'" do
+        msg = adapter.send(:first_message)
+        expect(msg).to include("a few quick questions")
+      end
     end
   end
 
@@ -77,16 +91,43 @@ RSpec.describe VapiAdapter, type: :service do
     end
   end
   describe "disclosure enforcement" do
-    it "firstMessage contains the disclosure verbatim with caller name and goal" do
+    it "firstMessage contains caller name and AI disclosure but not raw goal" do
       config = adapter.send(:build_assistant_config)
       expect(config[:firstMessage]).to include(call_plan.caller_name)
-      expect(config[:firstMessage]).to include(call_plan.goal)
       expect(config[:firstMessage]).to include("AI assistant")
+      expect(config[:firstMessage]).not_to include(call_plan.goal)
     end
 
     it "every build_call_payload includes firstMessage" do
       payload = adapter.send(:build_call_payload)
       expect(payload.dig(:assistant, :firstMessage)).to be_present
+    end
+  end
+
+  describe "serverUrl (webhook)" do
+    context "when WEBHOOK_BASE_URL is set" do
+      before { stub_const("ENV", ENV.to_h.merge("WEBHOOK_BASE_URL" => "https://myapp.example.com")) }
+
+      it "includes serverUrl pointing to /webhooks/vapi" do
+        config = adapter.send(:build_assistant_config)
+        expect(config[:serverUrl]).to eq("https://myapp.example.com/webhooks/vapi")
+      end
+
+      it "handles a trailing slash in the base URL" do
+        stub_const("ENV", ENV.to_h.merge("WEBHOOK_BASE_URL" => "https://myapp.example.com/"))
+        config = adapter.send(:build_assistant_config)
+        expect(config[:serverUrl]).to eq("https://myapp.example.com/webhooks/vapi")
+      end
+    end
+
+    context "when WEBHOOK_BASE_URL is not set" do
+      before { stub_const("ENV", ENV.to_h.except("WEBHOOK_BASE_URL")) }
+
+      it "omits serverUrl" do
+        allow(Rails.application.credentials).to receive(:dig).with(:vapi, :webhook_base_url).and_return(nil)
+        config = adapter.send(:build_assistant_config)
+        expect(config).not_to have_key(:serverUrl)
+      end
     end
   end
 end

@@ -10,7 +10,7 @@ class VapiAdapter
 
   # ADR-0003: disclosure is mandatory on every call.
   DISCLOSURE_TEMPLATE = "Hi, I'm an AI assistant calling on behalf of %<caller_name>s. " \
-                        "I'm calling to %<goal>s. Is it okay if I continue?"
+                        "I have %<question_count>s regarding %<goal_summary>s — is now a good time?"
 
   VOICEMAIL_TEMPLATE = "Hi, this is an AI assistant calling on behalf of %<caller_name>s. " \
                        "I'm calling to %<goal>s. Please call us back at your earliest convenience. Thank you."
@@ -53,7 +53,7 @@ class VapiAdapter
   end
 
   def build_assistant_config
-    {
+    config = {
       name: "Voice Assistant for #{@call_plan.caller_name}",
       firstMessage: first_message,
       model: {
@@ -68,6 +68,8 @@ class VapiAdapter
         voiceId: "alloy"
       }
     }
+    config[:serverUrl] = webhook_url if webhook_url.present?
+    config
   end
 
   def first_message
@@ -78,15 +80,36 @@ class VapiAdapter
     else
       format(DISCLOSURE_TEMPLATE,
         caller_name: @call_plan.caller_name,
-        goal: @call_plan.goal)
+        goal_summary: summarize_goal,
+        question_count: question_count)
     end
+  end
+
+  def question_count
+    count = @call_plan.questions_to_ask.length
+    count <= 1 ? "a quick question" : "a few quick questions"
+  end
+
+  def summarize_goal
+    goal = @call_plan.goal.strip
+    # Strip leading bullets/numbers, take first line, lowercase, trim punctuation
+    first_line = goal.lines.first.to_s.strip.gsub(/\A[\-\*\d\.]+\s*/, "").gsub(/[?.!]+\z/, "").downcase
+    # Truncate to ~60 chars at a word boundary
+    first_line.length > 60 ? first_line[0, 60].sub(/\s+\S+\z/, "").strip : first_line
   end
 
   def build_system_prompt
     sections = []
 
     sections << "You are an AI assistant placing a call on behalf of #{@call_plan.caller_name}."
-    sections << "Goal: #{@call_plan.goal}"
+    sections << <<~GOAL
+      Your instructions (interpret these as intent, not a script — the user may have written notes, bullet points, or fragments):
+      #{@call_plan.goal}
+
+      Understand what they are trying to accomplish and handle it naturally in conversation.
+      Once the recipient confirms they are ready to talk, work through the intent above conversationally.
+      Never read the instructions verbatim. Rephrase everything as natural spoken language.
+    GOAL
 
     if @call_plan.allowed_to_share.any?
       sections << "You may share the following information if asked:\n" +
@@ -163,6 +186,14 @@ class VapiAdapter
       "Content-Type" => "application/json",
       "Authorization" => "Bearer #{api_key}"
     }
+  end
+
+  def webhook_url
+    base = Rails.application.credentials.dig(:vapi, :webhook_base_url) ||
+      ENV["WEBHOOK_BASE_URL"]
+    return nil if base.blank?
+
+    "#{base.chomp("/")}/webhooks/vapi"
   end
 
   def api_key
