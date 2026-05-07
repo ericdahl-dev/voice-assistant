@@ -67,14 +67,38 @@
             <div class="flex items-center gap-3 shrink-0">
               <% if delegation.call_plan %>
                 <%
-                  status = delegation.call_plan.status
-                  badge_class = case status
-                    when "approved" then "badge-green"
-                    when "drafted"  then "badge-amber"
-                    else "badge-slate"
+                  latest_session = delegation.call_plan.call_sessions.order(created_at: :desc).first
+                  outcome = latest_session&.outcome
+
+                  if outcome.present?
+                    outcome_status = outcome["status"].to_s
+                    badge_class = case outcome_status
+                      when "completed"  then "badge-green"
+                      when "voicemail"  then "badge-slate"
+                      when "declined"   then "badge-slate"
+                      when "failed"     then "badge-red"
+                      else "badge-amber"
+                    end
+                    badge_label = outcome_status == "declined" ? "Declined" : outcome_status.capitalize
+                  elsif latest_session
+                    badge_class = case latest_session.status
+                      when "completed", "voicemail" then "badge-amber"
+                      when "dialing", "connected", "in_conversation" then "badge-blue"
+                      when "failed" then "badge-red"
+                      else "badge-slate"
+                    end
+                    badge_label = latest_session.status == "completed" ? "Analysing…" : latest_session.status.humanize
+                  else
+                    badge_class = delegation.call_plan.approved? ? "badge-green" : "badge-amber"
+                    badge_label = delegation.call_plan.status.capitalize
                   end
                 %>
-                <span class="<%= badge_class %>"><%= status.capitalize %></span>
+                <div class="text-right min-w-0">
+                  <span class="<%= badge_class %>"><%= badge_label %></span>
+                  <% if outcome&.dig("outcome").present? %>
+                    <p class="text-xs text-slate-400 mt-1 max-w-[200px] truncate"><%= outcome["outcome"] %></p>
+                  <% end %>
+                </div>
                 <%= link_to "View", delegation_call_plan_path(delegation), class: "btn-secondary text-xs" %>
               <% else %>
                 <span class="badge-slate">No plan yet</span>

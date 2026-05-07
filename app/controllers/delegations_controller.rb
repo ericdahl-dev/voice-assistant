@@ -2,7 +2,8 @@ class DelegationsController < ApplicationController
   before_action :authenticate_user!
 
   def index
-    @delegations = current_user.delegations.newest_first.includes(:call_plan, :call_template)
+    @delegations = current_user.delegations.newest_first
+      .includes(:call_template, call_plan: :call_sessions)
     @call_templates = ::CallTemplate.order(:name)
   end
 
