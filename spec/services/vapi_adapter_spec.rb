@@ -50,4 +50,17 @@ RSpec.describe VapiAdapter, type: :service do
       expect(prompt).to include("My first name")
     end
   end
+  describe "disclosure enforcement" do
+    it "firstMessage contains the disclosure verbatim with caller name and goal" do
+      config = adapter.send(:build_assistant_config)
+      expect(config[:firstMessage]).to include(call_plan.caller_name)
+      expect(config[:firstMessage]).to include(call_plan.goal)
+      expect(config[:firstMessage]).to include("AI assistant")
+    end
+
+    it "every build_call_payload includes firstMessage" do
+      payload = adapter.send(:build_call_payload)
+      expect(payload.dig(:assistant, :firstMessage)).to be_present
+    end
+  end
 end
