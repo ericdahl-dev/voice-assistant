@@ -47,7 +47,7 @@ class VapiAdapter
       firstMessage: disclosure_message,
       model: {
         provider: "openai",
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: build_system_prompt }
         ]
