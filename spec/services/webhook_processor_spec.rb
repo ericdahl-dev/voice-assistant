@@ -5,20 +5,20 @@ RSpec.describe WebhookProcessor do
   let(:call_session) { create(:call_session, call_plan: call_plan, status: "dialing", vapi_call_id: "vapi-123") }
 
   def event(type, extra = {})
-    {"type" => type, "call" => {"id" => call_session.vapi_call_id}}.merge(extra)
+    { "type" => type, "call" => { "id" => call_session.vapi_call_id } }.merge(extra)
   end
 
   describe "#process" do
     context "with unknown vapi_call_id" do
       it "does nothing" do
-        evt = {"type" => "call.started", "call" => {"id" => "not-found"}}
+        evt = { "type" => "call.started", "call" => { "id" => "not-found" } }
         expect { described_class.new(evt).process }.not_to(change { CallSession.count })
       end
     end
 
     context "with missing call.id" do
       it "does nothing" do
-        expect { described_class.new({"type" => "call.started"}).process }.not_to raise_error
+        expect { described_class.new({ "type" => "call.started" }).process }.not_to raise_error
       end
     end
 
@@ -43,7 +43,7 @@ RSpec.describe WebhookProcessor do
         before { call_session.update!(status: "connected") }
 
         it "transitions to voicemail" do
-          described_class.new(event("call.ended", "call" => {"id" => call_session.vapi_call_id, "endedReason" => "voicemail"})).process
+          described_class.new(event("call.ended", "call" => { "id" => call_session.vapi_call_id, "endedReason" => "voicemail" })).process
           expect(call_session.reload.status).to eq("voicemail")
         end
       end
@@ -78,18 +78,18 @@ RSpec.describe WebhookProcessor do
       before { call_session.update!(status: "connected") }
 
       it "appends chunk to transcript" do
-        described_class.new(event("transcript.chunk", "transcript" => {"text" => "Hello there"})).process
+        described_class.new(event("transcript.chunk", "transcript" => { "text" => "Hello there" })).process
         expect(call_session.reload.transcript).to eq("Hello there")
       end
 
       it "concatenates successive chunks" do
         call_session.update!(transcript: "Hello")
-        described_class.new(event("transcript.chunk", "transcript" => {"text" => " world"})).process
+        described_class.new(event("transcript.chunk", "transcript" => { "text" => " world" })).process
         expect(call_session.reload.transcript).to eq("Hello world")
       end
 
       it "ignores blank chunks" do
-        described_class.new(event("transcript.chunk", "transcript" => {"text" => ""})).process
+        described_class.new(event("transcript.chunk", "transcript" => { "text" => "" })).process
         expect(call_session.reload.transcript).to be_nil
       end
     end

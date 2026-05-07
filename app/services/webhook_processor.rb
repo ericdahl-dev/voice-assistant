@@ -56,7 +56,7 @@ class WebhookProcessor
     return if chunk.blank?
 
     @session.with_lock do
-      @session.update!(transcript: [@session.transcript, chunk].compact.join)
+      @session.update!(transcript: [ @session.transcript, chunk ].compact.join)
     end
   end
 
