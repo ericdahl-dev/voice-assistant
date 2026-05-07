@@ -172,7 +172,7 @@ Key design decisions (see `docs/adr/` for full context):
 
 - **Provider-owned conversation**: Vapi owns the conversation state machine during a live call. Rails hands off the CallPlan at dial time and receives webhooks when the session ends or needs escalation. A `VoiceAgentProvider` abstraction keeps this swappable.
 - **Real AI calls from day one**: No fake-door / human-in-the-loop stub — Phase 1 ships real GPT-4o-powered calls.
-- **GoodJob over Solid Queue**: GoodJob's built-in dashboard gives visibility into queued/failed jobs without custom tooling.
+- **GoodJob background processing**: GoodJob's built-in dashboard gives visibility into queued/failed jobs without custom tooling.
 - **Escalation is async**: The user is never bridged into the live call. The agent puts the caller on hold, notifies the user via Pushover + SMS, and waits for a reply.
 - **Disclosure is mandatory**: Every call opens with an AI identity disclosure. This is hardcoded and not configurable.
 
