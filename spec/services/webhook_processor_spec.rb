@@ -75,6 +75,22 @@ RSpec.describe WebhookProcessor do
         end
       end
 
+      context "when call_plan is voicemail_only" do
+        let(:call_plan) { create(:call_plan, :approved, :voicemail_only) }
+
+        before { call_session.update!(status: "connected") }
+
+        it "transitions to voicemail regardless of endedReason" do
+          described_class.new(event("end-of-call-report")).process
+          expect(call_session.reload.status).to eq("voicemail")
+        end
+
+        it "enqueues outcome extraction" do
+          expect { described_class.new(event("end-of-call-report")).process }
+            .to have_enqueued_job(ExtractOutcomeJob)
+        end
+      end
+
       context "when endedReason includes voicemail" do
         before { call_session.update!(status: "connected") }
 
