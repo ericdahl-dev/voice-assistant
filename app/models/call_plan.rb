@@ -5,7 +5,8 @@ class CallPlan < ApplicationRecord
   STATUSES = %w[drafted approved].freeze
 
   validates :target_name, presence: true
-  validates :target_phone, presence: true
+  before_validation :normalize_phone
+  validates :target_phone, presence: true, format: { with: /\A\+[1-9]\d{7,14}\z/, message: "must be in E.164 format (e.g. +14155550123)" }
   validates :caller_name, presence: true
   validates :goal, presence: true
   validates :status, inclusion: { in: STATUSES }
@@ -34,4 +35,18 @@ class CallPlan < ApplicationRecord
   end
 
   class AlreadyApprovedError < StandardError; end
+
+  private
+
+  def normalize_phone
+    return if target_phone.blank?
+    digits = target_phone.gsub(/\D/, "")
+    self.target_phone = if target_phone.start_with?("+")
+      target_phone
+    elsif digits.length == 10
+      "+1#{digits}"
+    else
+      "+#{digits}"
+    end
+  end
 end

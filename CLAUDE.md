@@ -65,13 +65,13 @@ Single-context — `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents
 
 ## Build & Test
 
-_Add your build and test commands here_
-
 ```bash
-# Example:
-# npm install
-# npm test
+bundle exec rspec          # run tests
+bin/rubocop --parallel     # lint
+bin/brakeman --no-pager -q # security scan
 ```
+
+**Before opening any PR, always run all three and fix any failures.**
 
 ## Architecture Overview
 
