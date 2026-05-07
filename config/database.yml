@@ -23,7 +23,12 @@ development:
 
 test:
   <<: *default
-  database: voice_assistant_test
+  <% if ENV["CI"] %>
+  host: localhost
+  username: postgres
+  password: postgres
+  <% end %>
+  database: voice_assistant_test<%= ENV["TEST_ENV_NUMBER"] %>
 
 production:
   <<: *default

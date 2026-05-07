@@ -36,6 +36,12 @@ cp -rf source dest          # NOT: cp -r source dest
 - `apt-get` - use `-y` flag
 - `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
 
+## Tests
+
+Full suite (same as main CI): `bundle exec parallel_rspec`. Prepare parallel DBs when needed: `RAILS_ENV=test bundle exec rake parallel:create parallel:load_schema`. Single file: `bundle exec rspec …`.
+
+**Neon vs parallel:** main CI uses container Postgres for parallel RSpec; Neon preview jobs use one DB and `bin/rails test`. Details: `docs/agents/testing.md`.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 

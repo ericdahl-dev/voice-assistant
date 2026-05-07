@@ -65,12 +65,14 @@ Single-context — `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents
 
 ## Build & Test
 
-_Add your build and test commands here_
+Rails + RSpec. **Full suite (main CI):** `bundle exec parallel_rspec`. **DB setup** (clone / schema change): `RAILS_ENV=test bundle exec rake parallel:create parallel:load_schema`. **Focused:** `bundle exec rspec spec/...`.
+
+Uses **`parallel_tests`** (`parallel_rspec`). Main CI uses Actions Postgres for multiple test DBs; Neon preview workflow is separate (single URL, Minitest). Agent reference: `docs/agents/testing.md`.
 
 ```bash
-# Example:
-# npm install
-# npm test
+bundle exec parallel_rspec
+bin/rubocop --parallel
+bin/brakeman --no-pager -q
 ```
 
 ## Architecture Overview

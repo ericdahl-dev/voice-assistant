@@ -3,6 +3,10 @@
 # your test database is "scratch space" for the test suite and is wiped
 # and recreated between test runs. Don't rely on the data there!
 
+# parallel_tests sets TEST_ENV_NUMBER in worker processes (even "" for the first).
+# DATABASE_URL would override database.yml and force every worker onto one DB.
+ENV.delete("DATABASE_URL") if ENV.key?("TEST_ENV_NUMBER")
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 

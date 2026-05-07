@@ -56,6 +56,7 @@ group :development, :test do
 end
 
 group :test do
+  gem "parallel_tests"
   gem "rails-controller-testing"
   gem "shoulda-matchers"
   gem "guard-rspec", require: false

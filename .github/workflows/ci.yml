@@ -27,7 +27,10 @@ jobs:
 
     env:
       RAILS_ENV: test
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/voice_assistant_test
+      PGHOST: localhost
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: postgres
       RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
 
     steps:
@@ -49,11 +52,11 @@ jobs:
       - name: Build Tailwind CSS
         run: bin/rails tailwindcss:build
 
-      - name: Set up database
-        run: bin/rails db:schema:load
+      - name: Set up parallel test databases
+        run: bundle exec rake parallel:create parallel:load_schema
 
       - name: Run tests
-        run: bundle exec rspec
+        run: bundle exec parallel_rspec
 
   lint:
     name: Lint
