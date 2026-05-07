@@ -43,12 +43,13 @@ RSpec.describe CallPlan, type: :model do
     end
 
     context "with a future scheduled_at" do
-      let(:plan) { create(:call_plan, scheduled_at: 1.hour.from_now) }
+      let(:future) { 1.hour.from_now.change(usec: 0) }
+      let(:plan) { create(:call_plan, scheduled_at: future) }
 
       it "enqueues PlaceCallJob with wait_until" do
         expect { plan.approve! }.to have_enqueued_job(PlaceCallJob)
           .with(plan.id, session_id: nil)
-          .at(plan.scheduled_at)
+          .at(future)
       end
     end
   end
@@ -78,7 +79,7 @@ RSpec.describe CallPlan, type: :model do
     end
 
     it "enqueues with wait_until when scheduled" do
-      future = 2.hours.from_now
+      future = 2.hours.from_now.change(usec: 0)
       plan = create(:call_plan, scheduled_at: future)
       expect { plan.enqueue_place_call_job }.to have_enqueued_job(PlaceCallJob)
         .with(plan.id, session_id: nil)
