@@ -1,0 +1,42 @@
+services:
+  web:
+    build: .
+    command: ["./bin/thrust", "./bin/rails", "server"]
+    ports:
+      - "80:80"
+    environment:
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      DATABASE_URL: ${DATABASE_URL}
+      APP_HOST: ${APP_HOST}
+      WEBHOOK_BASE_URL: ${WEBHOOK_BASE_URL}
+      VAPI_API_KEY: ${VAPI_API_KEY}
+      VAPI_PHONE_NUMBER_ID: ${VAPI_PHONE_NUMBER_ID}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      PUSHOVER_API_TOKEN: ${PUSHOVER_API_TOKEN:-}
+      PUSHOVER_USER_KEY: ${PUSHOVER_USER_KEY:-}
+      RAILS_ALLOWED_HOSTS: ${RAILS_ALLOWED_HOSTS:-}
+      RAILS_ASSUME_SSL: ${RAILS_ASSUME_SSL:-true}
+      RAILS_FORCE_SSL: ${RAILS_FORCE_SSL:-true}
+      RAILS_LOG_LEVEL: ${RAILS_LOG_LEVEL:-info}
+      RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-5}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
+      JOB_CONCURRENCY: ${JOB_CONCURRENCY:-5}
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: ["bundle", "exec", "good_job", "start"]
+    environment:
+      RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
+      DATABASE_URL: ${DATABASE_URL}
+      APP_HOST: ${APP_HOST}
+      WEBHOOK_BASE_URL: ${WEBHOOK_BASE_URL}
+      VAPI_API_KEY: ${VAPI_API_KEY}
+      VAPI_PHONE_NUMBER_ID: ${VAPI_PHONE_NUMBER_ID}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      PUSHOVER_API_TOKEN: ${PUSHOVER_API_TOKEN:-}
+      PUSHOVER_USER_KEY: ${PUSHOVER_USER_KEY:-}
+      RAILS_LOG_LEVEL: ${RAILS_LOG_LEVEL:-info}
+      RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-5}
+      JOB_CONCURRENCY: ${JOB_CONCURRENCY:-5}
+    restart: unless-stopped
