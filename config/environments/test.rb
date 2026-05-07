@@ -50,4 +50,9 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Prevent GoodJob from spawning background threads during tests; jobs are
+  # queued via the :test adapter set in rails_helper.rb.
+  config.good_job.execution_mode = :external
+  config.active_job.queue_adapter = :test
 end

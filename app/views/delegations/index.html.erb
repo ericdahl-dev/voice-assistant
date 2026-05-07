@@ -104,6 +104,7 @@
                 <span class="badge-slate">No plan yet</span>
                 <%= link_to "Create plan", new_delegation_call_plan_path(delegation), class: "btn-primary text-xs" %>
               <% end %>
+              <%= link_to "History", delegation_path(delegation), class: "btn-secondary text-xs" %>
             </div>
           </div>
         <% end %>
