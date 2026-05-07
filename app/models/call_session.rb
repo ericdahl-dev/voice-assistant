@@ -102,6 +102,12 @@ class CallSession < ApplicationRecord
       partial: "call_sessions/call_session",
       locals: { call_session: self }
     )
+    broadcast_replace_to(
+      [ call_plan.delegation, :call_sessions ],
+      target: dom_id(self, :live),
+      partial: "call_sessions/live_status",
+      locals: { call_session: self }
+    )
   end
 
   def broadcast_outcome_update

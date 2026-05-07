@@ -24,6 +24,10 @@ class CallPlansController < ApplicationController
 
   def show
     @call_plan = @delegation.call_plan
+    if @call_plan
+      @active_session = @call_plan.call_sessions.where.not(status: %w[completed failed voicemail]).order(created_at: :desc).first
+      @recent_sessions = @call_plan.call_sessions.order(created_at: :desc).limit(5)
+    end
   end
 
   def edit

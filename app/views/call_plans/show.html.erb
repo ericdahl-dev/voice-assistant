@@ -29,6 +29,22 @@
     </div>
   <% end %>
 
+  <%# Live call status — shown when there are sessions %>
+  <% if @recent_sessions&.any? %>
+    <%= turbo_stream_from [@delegation, :call_sessions] %>
+
+    <div class="mb-6">
+      <p class="section-title mb-3">
+        <% if @active_session %>Call in progress<% else %>Call history<% end %>
+      </p>
+      <div class="space-y-2">
+        <% (@active_session ? [@active_session] : @recent_sessions).each do |session| %>
+          <%= render "call_sessions/live_status", call_session: session %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <%# Detail card %>
   <div class="card mb-6">
     <div class="card-header">
