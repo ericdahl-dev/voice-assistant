@@ -5,7 +5,7 @@ class CallPlan < ApplicationRecord
   STATUSES = %w[drafted approved].freeze
 
   validates :target_name, presence: true
-  validates :target_phone, presence: true
+  validates :target_phone, presence: true, format: { with: /\A\+[1-9]\d{7,14}\z/, message: "must be in E.164 format (e.g. +12125551234)" }
   validates :caller_name, presence: true
   validates :goal, presence: true
   validates :status, inclusion: { in: STATUSES }

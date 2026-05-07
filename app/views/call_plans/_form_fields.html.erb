@@ -27,7 +27,8 @@
       </div>
       <div class="form-field">
         <%= f.label :target_phone, "Phone number", class: "form-label" %>
-        <%= f.telephone_field :target_phone, placeholder: "e.g. 555-867-5309", class: "form-input" %>
+        <%= f.telephone_field :target_phone, placeholder: "e.g. +12125551234", class: "form-input" %>
+        <p class="form-hint mt-1">Include country code — e.g. +1 for US</p>
       </div>
     </div>
   </div>

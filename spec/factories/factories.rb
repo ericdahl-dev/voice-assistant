@@ -24,7 +24,7 @@ FactoryBot.define do
   factory :call_plan do
     delegation
     target_name { "Maplewood Auto" }
-    target_phone { "555-867-5309" }
+    target_phone { "+15558675309" }
     caller_name { "Alex" }
     goal { "Check if the car is ready for pickup" }
     status { "drafted" }
