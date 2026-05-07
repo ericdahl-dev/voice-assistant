@@ -79,6 +79,32 @@ RSpec.describe VapiAdapter, type: :service do
     it "includes allowed-to-share facts" do
       expect(prompt).to include("My first name")
     end
+
+    it "includes a guardrail section anchored to the goal" do
+      expect(prompt).to include(call_plan.goal)
+      expect(prompt).to include("off-topic")
+    end
+
+    it "instructs agent to redirect before ending" do
+      expect(prompt).to include("redirect")
+      expect(prompt).to match(/2.*attempt|attempt.*2/i)
+    end
+
+    it "includes the hardcoded goodbye phrase" do
+      expect(prompt).to include("I'm not able to help with that")
+    end
+
+    it "forbids sharing info outside allowed_to_share" do
+      expect(prompt).to match(/do not.*share|only.*share|never.*share/i)
+    end
+
+    context "when max_redirects is customized" do
+      let(:call_plan) { create(:call_plan, :approved, max_redirects: 3) }
+
+      it "uses the plan's max_redirects value" do
+        expect(prompt).to include("3")
+      end
+    end
   end
   describe "voicemail_only path" do
     let(:call_plan) { create(:call_plan, :approved, :voicemail_only) }
@@ -117,6 +143,18 @@ RSpec.describe VapiAdapter, type: :service do
     it "every build_call_payload includes firstMessage" do
       payload = adapter.send(:build_call_payload)
       expect(payload.dig(:assistant, :firstMessage)).to be_present
+    end
+  end
+
+  describe "assistant config guardrail fields" do
+    subject(:config) { adapter.send(:build_assistant_config) }
+
+    it "sets endCallFunctionEnabled to true" do
+      expect(config[:endCallFunctionEnabled]).to be true
+    end
+
+    it "sets endCallMessage to the goodbye phrase" do
+      expect(config[:endCallMessage]).to include("I'm not able to help with that")
     end
   end
 

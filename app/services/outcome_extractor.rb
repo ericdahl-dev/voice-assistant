@@ -53,7 +53,7 @@ class OutcomeExtractor
       You are an assistant that extracts structured outcomes from phone call transcripts.
       Respond ONLY with valid JSON matching this schema exactly:
       {
-        "status": "completed" | "voicemail" | "failed" | "declined" | "unknown",
+        "status": "completed" | "voicemail" | "failed" | "declined" | "terminated_off_topic" | "unknown",
         "outcome": "<one sentence summary of what was achieved or learned>",
         "follow_up_needed": true | false,
         "summary": "<2-4 sentence narrative summary>",
