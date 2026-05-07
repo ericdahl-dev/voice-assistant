@@ -9,10 +9,10 @@ CallTemplate.find_or_create_by!(name: "Auto Repair Status Check") do |t|
                     "If it is not ready, ask for an estimated completion date and time."
 
   t.variable_schema = [
-    {"key" => "shop_name",    "label" => "Shop name",            "required" => true},
-    {"key" => "target_phone", "label" => "Shop phone number",    "required" => true},
-    {"key" => "caller_name",  "label" => "Your first name",      "required" => true},
-    {"key" => "vehicle",      "label" => "Vehicle (year, make, model)", "required" => true}
+    { "key" => "shop_name",    "label" => "Shop name",            "required" => true },
+    { "key" => "target_phone", "label" => "Shop phone number",    "required" => true },
+    { "key" => "caller_name",  "label" => "Your first name",      "required" => true },
+    { "key" => "vehicle",      "label" => "Vehicle (year, make, model)", "required" => true }
   ]
 
   t.default_allowed_to_share = [

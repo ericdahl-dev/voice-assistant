@@ -24,6 +24,11 @@ jobs:
         env:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
         run: |
+          if [ -z "$NEON_API_KEY" ]; then
+            echo "NEON_API_KEY not available, skipping Neon branch creation"
+            echo "db_url=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           BRANCH_NAME="pr-${{ github.event.pull_request.number }}"
           neonctl branches create \
             --project-id ${{ vars.NEON_PROJECT_ID }} \
@@ -39,11 +44,16 @@ jobs:
             --database-name neondb \
             --output json 2>/dev/null | tr -d '"')
 
+          if [ -z "$DB_URL" ]; then
+            echo "Failed to get Neon connection string for branch $BRANCH_NAME"
+            exit 1
+          fi
           echo "db_url=$DB_URL" >> $GITHUB_OUTPUT
 
   test:
     name: Test on preview branch
     needs: create_branch
+    if: needs.create_branch.result == 'success' && needs.create_branch.outputs.database_url != ''
     runs-on: ubuntu-latest
 
     env:

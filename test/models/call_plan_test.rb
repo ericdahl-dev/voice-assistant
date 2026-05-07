@@ -78,12 +78,12 @@ class CallPlanTest < ActiveSupport::TestCase
 
   test "jsonb fields round-trip through the database" do
     plan = valid_call_plan
-    plan.allowed_to_share = ["my name", "appointment date"]
-    plan.questions_to_ask = ["Is the part in stock?"]
+    plan.allowed_to_share = [ "my name", "appointment date" ]
+    plan.questions_to_ask = [ "Is the part in stock?" ]
     plan.save!
     plan.reload
 
-    assert_equal ["my name", "appointment date"], plan.allowed_to_share
-    assert_equal ["Is the part in stock?"], plan.questions_to_ask
+    assert_equal [ "my name", "appointment date" ], plan.allowed_to_share
+    assert_equal [ "Is the part in stock?" ], plan.questions_to_ask
   end
 end

@@ -7,8 +7,8 @@ Rails.application.routes.draw do
 
   # Delegations represent a user asking the AI to make a call on their behalf.
   # The nested call_plans resource handles CallPlan creation within a delegation.
-  resources :delegations, only: [:index, :show, :new, :create] do
-    resource :call_plan, only: [:new, :create, :show, :edit, :update] do
+  resources :delegations, only: [ :index, :show, :new, :create ] do
+    resource :call_plan, only: [ :new, :create, :show, :edit, :update ] do
       post :approve, on: :member
     end
   end
