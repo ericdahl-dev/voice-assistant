@@ -9,8 +9,11 @@ class VapiAdapter
   VAPI_BASE_URL = "https://api.vapi.ai"
 
   # ADR-0003: disclosure is mandatory on every call.
+  # First message only discloses AI identity and asks for consent.
+  # The goal is NOT read verbatim here — it lives in the system prompt and
+  # the assistant states it naturally once the recipient says yes.
   DISCLOSURE_TEMPLATE = "Hi, I'm an AI assistant calling on behalf of %<caller_name>s. " \
-                        "I'm calling to %<goal>s. Is it okay if I continue?"
+                        "Do you have a moment to speak with me?"
 
   def self.call(call_plan:)
     new(call_plan:).call
@@ -50,23 +53,24 @@ class VapiAdapter
         ]
       },
       voice: {
-        provider: "11labs",
-        voiceId: "rachel"
+        provider: "openai",
+        voiceId: "alloy"
       }
     }
   end
 
   def disclosure_message
-    format(DISCLOSURE_TEMPLATE,
-      caller_name: @call_plan.caller_name,
-      goal: @call_plan.goal)
+    format(DISCLOSURE_TEMPLATE, caller_name: @call_plan.caller_name)
   end
 
   def build_system_prompt
     sections = []
 
     sections << "You are an AI assistant placing a call on behalf of #{@call_plan.caller_name}."
-    sections << "Goal: #{@call_plan.goal}"
+    sections << "Your goal for this call: #{@call_plan.goal}"
+    sections << "Once the recipient agrees to speak with you, state your purpose naturally in " \
+                "one sentence before proceeding. Do not read the goal verbatim — rephrase it " \
+                "as a human caller would."
 
     if @call_plan.allowed_to_share.any?
       sections << "You may share the following information if asked:\n" +
