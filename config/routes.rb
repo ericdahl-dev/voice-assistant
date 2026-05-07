@@ -13,5 +13,8 @@ Rails.application.routes.draw do
     end
   end
 
+  post "webhooks/vapi", to: "webhooks#vapi"
+  resources :call_sessions, only: [:show]
+
   root to: "home#index"
 end
