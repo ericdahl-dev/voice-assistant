@@ -10,9 +10,37 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_07_024132) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_07_025413) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "call_plans", force: :cascade do |t|
+    t.jsonb "allowed_decisions", default: [], null: false
+    t.jsonb "allowed_to_share", default: [], null: false
+    t.datetime "approved_at"
+    t.string "caller_name", null: false
+    t.datetime "created_at", null: false
+    t.bigint "delegation_id", null: false
+    t.text "fallback"
+    t.jsonb "forbidden_actions", default: [], null: false
+    t.text "goal", null: false
+    t.jsonb "questions_to_ask", default: [], null: false
+    t.string "status", default: "drafted", null: false
+    t.string "target_name", null: false
+    t.string "target_phone", null: false
+    t.datetime "updated_at", null: false
+    t.index ["delegation_id"], name: "index_call_plans_on_delegation_id"
+    t.index ["status"], name: "index_call_plans_on_status"
+  end
+
+  create_table "delegations", force: :cascade do |t|
+    t.bigint "call_template_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["call_template_id"], name: "index_delegations_on_call_template_id"
+    t.index ["user_id"], name: "index_delegations_on_user_id"
+  end
 
   create_table "good_job_batches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "callback_priority"
@@ -125,4 +153,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_024132) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
+
+  add_foreign_key "call_plans", "delegations"
+  add_foreign_key "delegations", "users"
 end
