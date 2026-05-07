@@ -1,5 +1,6 @@
 class CallPlan < ApplicationRecord
   belongs_to :delegation
+  has_many :call_sessions, dependent: :destroy
 
   STATUSES = %w[drafted approved].freeze
 

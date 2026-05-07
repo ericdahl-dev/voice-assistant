@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_07_025938) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_07_030407) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -31,6 +31,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_025938) do
     t.datetime "updated_at", null: false
     t.index ["delegation_id"], name: "index_call_plans_on_delegation_id"
     t.index ["status"], name: "index_call_plans_on_status"
+  end
+
+  create_table "call_sessions", force: :cascade do |t|
+    t.bigint "call_plan_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "ended_at"
+    t.jsonb "outcome"
+    t.datetime "scheduled_at"
+    t.datetime "started_at"
+    t.string "status", default: "drafted", null: false
+    t.text "transcript"
+    t.datetime "updated_at", null: false
+    t.string "vapi_call_id"
+    t.index ["call_plan_id"], name: "index_call_sessions_on_call_plan_id"
+    t.index ["status"], name: "index_call_sessions_on_status"
+    t.index ["vapi_call_id"], name: "index_call_sessions_on_vapi_call_id", unique: true, where: "(vapi_call_id IS NOT NULL)"
   end
 
   create_table "call_templates", force: :cascade do |t|
@@ -169,5 +185,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_025938) do
   end
 
   add_foreign_key "call_plans", "delegations"
+  add_foreign_key "call_sessions", "call_plans"
   add_foreign_key "delegations", "users"
 end
