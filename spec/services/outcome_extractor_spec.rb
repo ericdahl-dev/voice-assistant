@@ -73,7 +73,7 @@ RSpec.describe OutcomeExtractor, type: :service do
       before do
         fake_response = instance_double(Net::HTTPResponse,
           code: "200",
-          body: {"choices" => [{"message" => {"content" => "Left a voicemail about car pickup."}}]}.to_json)
+          body: { "choices" => [ { "message" => { "content" => "Left a voicemail about car pickup." } } ] }.to_json)
         allow_any_instance_of(Net::HTTP).to receive(:request).and_return(fake_response)
       end
 
