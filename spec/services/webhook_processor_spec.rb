@@ -74,6 +74,21 @@ RSpec.describe WebhookProcessor do
       end
     end
 
+    context "call.declined" do
+      it "transitions to completed with declined outcome" do
+        described_class.new(event("call.declined")).process
+        session = call_session.reload
+        expect(session.status).to eq("completed")
+        expect(session.outcome["status"]).to eq("declined")
+        expect(session.outcome["summary"]).to include("declined")
+      end
+
+      it "is idempotent when already completed" do
+        call_session.update!(status: "completed")
+        expect { described_class.new(event("call.declined")).process }.not_to raise_error
+      end
+    end
+
     context "transcript.chunk" do
       before { call_session.update!(status: "connected") }
 

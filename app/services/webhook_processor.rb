@@ -5,6 +5,7 @@ class WebhookProcessor
     "call.started"          => :handle_call_started,
     "call.connected"        => :handle_call_connected,
     "call.ended"            => :handle_call_ended,
+    "call.declined"         => :handle_call_declined,
     "transcript.chunk"      => :handle_transcript_chunk,
     "escalation.triggered"  => :handle_escalation_triggered
   }.freeze
@@ -58,6 +59,16 @@ class WebhookProcessor
     @session.with_lock do
       @session.update!(transcript: [ @session.transcript, chunk ].compact.join)
     end
+  end
+
+  def handle_call_declined
+    return if @session.terminal?
+
+    @session.transition_to!("completed")
+    @session.update!(outcome: {
+      "status" => "declined",
+      "summary" => "The business declined to continue after the AI disclosure."
+    })
   end
 
   def handle_escalation_triggered

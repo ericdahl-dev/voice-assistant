@@ -34,7 +34,7 @@ class CallSession < ApplicationRecord
   TRANSITIONS = {
     "drafted"        => %w[queued failed],
     "queued"         => %w[dialing failed],
-    "dialing"        => %w[connected failed],
+    "dialing"        => %w[connected completed failed],
     "connected"      => %w[in_conversation voicemail completed failed],
     "in_conversation" => %w[needs_user completed failed],
     "needs_user"     => %w[in_conversation completed failed],
