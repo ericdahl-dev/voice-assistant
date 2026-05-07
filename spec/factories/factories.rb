@@ -74,4 +74,9 @@ FactoryBot.define do
       timed_out { true }
     end
   end
+
+  factory :escalation do
+    call_session
+    question { "Should I approve the additional repair?" }
+  end
 end
