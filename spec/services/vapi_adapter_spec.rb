@@ -2,12 +2,11 @@ require "rails_helper"
 
 RSpec.describe VapiAdapter, type: :service do
   let(:call_plan) { create(:call_plan, :approved, forbidden_actions: [ "Approve new repairs" ], allowed_to_share: [ "My first name" ], questions_to_ask: [ "Is the car ready?" ]) }
-  let(:adapter) { described_class.new(call_plan:) }
+  let(:adapter) { described_class.new(call_plan:, goal_summary: "a vehicle status check") }
 
   before do
     allow(adapter).to receive(:vapi_phone_number_id).and_return("phone-num-stub")
     allow(adapter).to receive(:api_key).and_return("key-stub")
-    allow(adapter).to receive(:summarize_goal).and_return("a vehicle status check")
   end
 
   describe "#call" do
@@ -67,7 +66,7 @@ RSpec.describe VapiAdapter, type: :service do
   end
   describe "voicemail_only path" do
     let(:call_plan) { create(:call_plan, :approved, :voicemail_only) }
-    let(:adapter) { described_class.new(call_plan:) }
+    let(:adapter) { described_class.new(call_plan:, goal_summary: nil) }
 
     before do
       allow(adapter).to receive(:vapi_phone_number_id).and_return("phone-num-stub")
