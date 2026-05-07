@@ -9,6 +9,7 @@ RSpec.describe ExtractOutcomeJob, type: :job do
     allow(client_double).to receive(:chat).and_return({
       "choices" => [ { "message" => { "content" => response_text } } ]
     })
+    allow_any_instance_of(described_class).to receive(:openai_api_key).and_return("test-key")
     client_double
   end
 

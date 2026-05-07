@@ -33,6 +33,10 @@ FactoryBot.define do
       status { "approved" }
       approved_at { Time.current }
     end
+
+    trait :voicemail_only do
+      voicemail_only { true }
+    end
   end
 
   factory :call_session do
