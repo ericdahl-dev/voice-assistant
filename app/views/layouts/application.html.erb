@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-50 dark:bg-slate-950">
   <head>
-    <title><%= content_for(:title) || "Delegate" %></title>
+    <title><%= content_for(:title) || "Callspark" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Delegate">
+    <meta name="application-name" content="Callspark">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -28,8 +28,21 @@
   </head>
 
   <body class="h-full" data-controller="theme">
+
+    <%# ——— Flash (always) ——— %>
+    <% if notice.present? %>
+      <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4">
+        <div class="flash-notice shadow-md" role="alert"><%= notice %></div>
+      </div>
+    <% end %>
+    <% if alert.present? %>
+      <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4">
+        <div class="flash-alert shadow-md" role="alert"><%= alert %></div>
+      </div>
+    <% end %>
+
     <% if user_signed_in? %>
-      <%# ——— App shell ——— %>
+      <%# ——— Authenticated app shell ——— %>
       <div class="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
         <%# Top nav %>
         <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 dark:bg-slate-900 dark:border-slate-800">
@@ -41,7 +54,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/>
                 </svg>
               </div>
-              <span class="font-semibold text-slate-900 dark:text-slate-100 text-sm tracking-tight" style="font-family: var(--font-display)">Delegate</span>
+              <span class="font-semibold text-slate-900 dark:text-slate-100 text-sm tracking-tight" style="font-family: var(--font-display)">Callspark</span>
             <% end %>
 
             <%# Nav links %>
@@ -73,18 +86,6 @@
           </div>
         </nav>
 
-        <%# Flash messages %>
-        <% if notice.present? %>
-          <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 pt-4">
-            <div class="flash-notice" role="alert"><%= notice %></div>
-          </div>
-        <% end %>
-        <% if alert.present? %>
-          <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 pt-4">
-            <div class="flash-alert" role="alert"><%= alert %></div>
-          </div>
-        <% end %>
-
         <%# Main content %>
         <main class="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-8">
           <%= yield %>
@@ -92,23 +93,14 @@
 
         <%# Footer %>
         <footer class="border-t border-slate-100 py-5 dark:border-slate-800">
-          <p class="text-center text-xs text-slate-400 dark:text-slate-600">Delegate &mdash; AI-powered outbound calling</p>
+          <p class="text-center text-xs text-slate-400 dark:text-slate-600">Callspark &mdash; AI-powered outbound calling</p>
         </footer>
       </div>
 
     <% else %>
-      <%# Unauthenticated: full-screen auth layout %>
-      <% if notice.present? %>
-        <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4">
-          <div class="flash-notice shadow-md" role="alert"><%= notice %></div>
-        </div>
-      <% end %>
-      <% if alert.present? %>
-        <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4">
-          <div class="flash-alert shadow-md" role="alert"><%= alert %></div>
-        </div>
-      <% end %>
+      <%# ——— Public layout (landing + auth) ——— %>
       <%= yield %>
     <% end %>
+
   </body>
 </html>

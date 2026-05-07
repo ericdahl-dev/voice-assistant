@@ -32,7 +32,7 @@ class PlaceCallJobTest < ActiveSupport::TestCase
   end
 
   test "job creates a CallSession and transitions to dialing on success" do
-    VapiAdapter.stub(:call, ->(**) { {call_id: "vapi-xyz-789"} }) do
+    VapiAdapter.stub(:call, ->(**) { { call_id: "vapi-xyz-789" } }) do
       PlaceCallJob.perform_now(@call_plan.id)
     end
 
@@ -53,7 +53,7 @@ class PlaceCallJobTest < ActiveSupport::TestCase
   end
 
   test "job is idempotent — second run skips if session already past drafted" do
-    VapiAdapter.stub(:call, ->(**) { {call_id: "vapi-xyz-789"} }) do
+    VapiAdapter.stub(:call, ->(**) { { call_id: "vapi-xyz-789" } }) do
       PlaceCallJob.perform_now(@call_plan.id)
       PlaceCallJob.perform_now(@call_plan.id)
     end

@@ -13,5 +13,5 @@ Rails.application.routes.draw do
     end
   end
 
-  root to: "delegations#index"
+  root to: "home#index"
 end

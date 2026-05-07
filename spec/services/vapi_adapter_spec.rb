@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe VapiAdapter, type: :service do
-  let(:call_plan) { create(:call_plan, :approved, forbidden_actions: ["Approve new repairs"], allowed_to_share: ["My first name"], questions_to_ask: ["Is the car ready?"]) }
+  let(:call_plan) { create(:call_plan, :approved, forbidden_actions: [ "Approve new repairs" ], allowed_to_share: [ "My first name" ], questions_to_ask: [ "Is the car ready?" ]) }
   let(:adapter) { described_class.new(call_plan:) }
 
   before do
@@ -11,8 +11,8 @@ RSpec.describe VapiAdapter, type: :service do
 
   describe "#call" do
     it "returns a call_id on success" do
-      allow(adapter).to receive(:post).and_return({"id" => "vapi-abc-123"})
-      expect(adapter.call).to eq({call_id: "vapi-abc-123"})
+      allow(adapter).to receive(:post).and_return({ "id" => "vapi-abc-123" })
+      expect(adapter.call).to eq({ call_id: "vapi-abc-123" })
     end
 
     it "raises ApiError on Vapi 5xx" do

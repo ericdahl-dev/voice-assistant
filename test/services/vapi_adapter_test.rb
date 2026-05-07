@@ -13,9 +13,9 @@ class VapiAdapterTest < ActiveSupport::TestCase
       target_phone: "555-867-5309",
       caller_name: "Alex",
       goal: "Check if the car is ready",
-      forbidden_actions: ["Approve new repairs"],
-      allowed_to_share: ["My first name"],
-      questions_to_ask: ["Is the car ready?"]
+      forbidden_actions: [ "Approve new repairs" ],
+      allowed_to_share: [ "My first name" ],
+      questions_to_ask: [ "Is the car ready?" ]
     )
     @call_plan.update_column(:status, "approved")
 
@@ -47,18 +47,18 @@ class VapiAdapterTest < ActiveSupport::TestCase
   private
 
   def stub_adapter_server_error
-    Net::HTTP.stub(:start, ->(*) { raise_server_error }) {}
-    @adapter.stub(:post, ->(*) { raise VoiceAgentProvider::ApiError, "500" }) {}
+    Net::HTTP.stub(:start, ->(*) { raise_server_error }) { }
+    @adapter.stub(:post, ->(*) { raise VoiceAgentProvider::ApiError, "500" }) { }
   end
 
   def stub_adapter_client_error
-    @adapter.stub(:post, ->(*) { raise VoiceAgentProvider::PermanentError, "422" }) {}
+    @adapter.stub(:post, ->(*) { raise VoiceAgentProvider::PermanentError, "422" }) { }
   end
 
   # Contract test helpers — stub post directly so no real HTTP fires
   def test_returns_call_id_on_success
     fake_call_id = "vapi-call-abc123"
-    @adapter.stub(:post, ->(*) { {"id" => fake_call_id} }) do
+    @adapter.stub(:post, ->(*) { { "id" => fake_call_id } }) do
       result = @adapter.call(call_plan: @call_plan)
       assert_equal fake_call_id, result[:call_id]
     end

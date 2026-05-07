@@ -43,17 +43,17 @@ RSpec.describe CallSession, type: :model do
       end
 
       it "sets ended_at on transition to completed" do
-        [:queued, :dialing, :connected, :in_conversation, :completed].each { |s| session.transition_to!(s) }
+        [ :queued, :dialing, :connected, :in_conversation, :completed ].each { |s| session.transition_to!(s) }
         expect(session.ended_at).not_to be_nil
       end
 
       it "sets ended_at on transition to voicemail" do
-        [:queued, :dialing, :connected, :voicemail].each { |s| session.transition_to!(s) }
+        [ :queued, :dialing, :connected, :voicemail ].each { |s| session.transition_to!(s) }
         expect(session.ended_at).not_to be_nil
       end
 
       it "supports needs_user detour: in_conversation → needs_user → in_conversation → completed" do
-        [:queued, :dialing, :connected, :in_conversation, :needs_user, :in_conversation, :completed].each do |s|
+        [ :queued, :dialing, :connected, :in_conversation, :needs_user, :in_conversation, :completed ].each do |s|
           session.transition_to!(s)
         end
         expect(session).to be_completed
@@ -73,13 +73,13 @@ RSpec.describe CallSession, type: :model do
       end
 
       it "raises InvalidTransitionError going backwards (completed → drafted)" do
-        [:queued, :dialing, :connected, :in_conversation, :completed].each { |s| session.transition_to!(s) }
+        [ :queued, :dialing, :connected, :in_conversation, :completed ].each { |s| session.transition_to!(s) }
         expect { session.transition_to!("drafted") }
           .to raise_error(CallSession::InvalidTransitionError)
       end
 
       it "raises InvalidTransitionError leaving a terminal state (voicemail → completed)" do
-        [:queued, :dialing, :connected, :voicemail].each { |s| session.transition_to!(s) }
+        [ :queued, :dialing, :connected, :voicemail ].each { |s| session.transition_to!(s) }
         expect { session.transition_to!("completed") }
           .to raise_error(CallSession::InvalidTransitionError, /terminal/)
       end
@@ -91,13 +91,13 @@ RSpec.describe CallSession, type: :model do
       session = create(:call_session, call_plan:, outcome: {
         "status" => "completed",
         "summary" => "Vehicle ready for pickup.",
-        "important_details" => ["Ready at 3pm", "No extra charges"],
+        "important_details" => [ "Ready at 3pm", "No extra charges" ],
         "confidence" => 0.95
       })
 
       session.reload
       expect(session.outcome["status"]).to eq("completed")
-      expect(session.outcome["important_details"]).to eq(["Ready at 3pm", "No extra charges"])
+      expect(session.outcome["important_details"]).to eq([ "Ready at 3pm", "No extra charges" ])
       expect(session.outcome["confidence"]).to eq(0.95)
     end
   end
