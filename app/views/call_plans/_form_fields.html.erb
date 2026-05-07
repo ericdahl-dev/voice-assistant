@@ -29,6 +29,11 @@
         <%= f.label :target_phone, "Phone number", class: "form-label" %>
         <%= f.telephone_field :target_phone, placeholder: "e.g. (555) 867-5309 or +15558675309", class: "form-input" %>
       </div>
+      <div class="form-field">
+        <%= f.label :target_contact_name, "Contact name (optional)", class: "form-label" %>
+        <p class="form-hint">A specific person to ask for at the business.</p>
+        <%= f.text_field :target_contact_name, placeholder: "e.g. Sarah", class: "form-input mt-1" %>
+      </div>
     </div>
     <div class="card-body border-t border-slate-100 dark:border-slate-700">
       <label class="flex items-center gap-3 cursor-pointer">
@@ -49,7 +54,7 @@
     <div class="card-body">
       <div class="form-field max-w-sm">
         <%= f.label :caller_name, "Your first name", class: "form-label" %>
-        <p class="form-hint">The AI will introduce itself using this name.</p>
+        <p class="form-hint">This is <strong>your</strong> name &mdash; the AI will say it&rsquo;s calling on your behalf.</p>
         <%= f.text_field :caller_name, placeholder: "e.g. Alex", class: "form-input mt-1" %>
       </div>
     </div>

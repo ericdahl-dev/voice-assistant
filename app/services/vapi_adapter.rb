@@ -102,6 +102,14 @@ class VapiAdapter
     sections = []
 
     sections << "You are an AI assistant placing a call on behalf of #{@call_plan.caller_name}."
+
+    if @call_plan.target_contact_name.present?
+      sections << "You are calling #{@call_plan.target_name}. Ask to speak with #{@call_plan.target_contact_name} specifically. " \
+                  "Confirm you have reached the right business and the right person before proceeding."
+    else
+      sections << "You are calling #{@call_plan.target_name}. Confirm you have reached the right business before proceeding."
+    end
+
     sections << <<~GOAL
       Your instructions (interpret these as intent, not a script — the user may have written notes, bullet points, or fragments):
       #{@call_plan.goal}
