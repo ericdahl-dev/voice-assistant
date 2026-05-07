@@ -64,8 +64,8 @@ class VapiAdapter
         ]
       },
       voice: {
-        provider: "11labs",
-        voiceId: "rachel"
+        provider: "openai",
+        voiceId: "alloy"
       }
     }
   end
