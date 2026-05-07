@@ -1,0 +1,41 @@
+<h1>Your Delegations</h1>
+<p>
+  <%= link_to current_user.email %> &middot;
+  <%= link_to "Sign out", destroy_user_session_path, data: { turbo_method: :delete } %>
+</p>
+
+<% if @call_templates.any? %>
+  <h2>Delegate a new call</h2>
+  <% @call_templates.each do |template| %>
+    <div>
+      <strong><%= template.name %></strong>
+      <p><%= template.description %></p>
+      <%= button_to "Use this template", delegations_path(delegation: { call_template_id: template.id }),
+            method: :post %>
+    </div>
+  <% end %>
+<% else %>
+  <p>No call templates available yet.</p>
+<% end %>
+
+<h2>Recent delegations</h2>
+<% if @delegations.any? %>
+  <ul>
+    <% @delegations.each do |delegation| %>
+      <li>
+        <%= delegation.call_template&.name || "Custom call" %>
+        &mdash;
+        <% if delegation.call_plan %>
+          Status: <strong><%= delegation.call_plan.status %></strong>
+          &middot;
+          <%= link_to "View call plan", delegation_call_plan_path(delegation) %>
+        <% else %>
+          <%= link_to "Create call plan", new_delegation_call_plan_path(delegation) %>
+        <% end %>
+        <small>(<%= delegation.created_at.strftime("%b %-d") %>)</small>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>You haven't delegated any calls yet.</p>
+<% end %>

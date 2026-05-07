@@ -1,0 +1,62 @@
+<h1>Edit your call plan</h1>
+
+<%= form_with model: [@delegation, @call_plan] do |form| %>
+  <% if @call_plan.errors.any? %>
+    <ul>
+      <% @call_plan.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <fieldset>
+    <legend>Who are we calling?</legend>
+
+    <p>
+      <%= form.label :target_name, "Business or person name" %><br>
+      <%= form.text_field :target_name %>
+    </p>
+
+    <p>
+      <%= form.label :target_phone, "Phone number" %><br>
+      <%= form.telephone_field :target_phone %>
+    </p>
+  </fieldset>
+
+  <fieldset>
+    <legend>About the caller</legend>
+
+    <p>
+      <%= form.label :caller_name, "Your first name" %><br>
+      <%= form.text_field :caller_name %>
+    </p>
+  </fieldset>
+
+  <fieldset>
+    <legend>What should the AI do?</legend>
+
+    <p>
+      <%= form.label :goal %><br>
+      <%= form.text_area :goal, rows: 3 %>
+    </p>
+
+    <p>
+      <%= form.label :fallback, "Fallback if goal can't be achieved" %><br>
+      <%= form.text_area :fallback, rows: 2 %>
+    </p>
+  </fieldset>
+
+  <%# Preserve existing array values through hidden fields %>
+  <% (@call_plan.allowed_to_share || []).each do |item| %>
+    <%= form.hidden_field :allowed_to_share, value: item, multiple: true %>
+  <% end %>
+  <% (@call_plan.forbidden_actions || []).each do |item| %>
+    <%= form.hidden_field :forbidden_actions, value: item, multiple: true %>
+  <% end %>
+
+  <p>
+    <%= form.submit "Save changes" %>
+    &nbsp;
+    <%= link_to "Cancel", delegation_call_plan_path(@delegation) %>
+  </p>
+<% end %>

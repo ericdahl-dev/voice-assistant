@@ -1,0 +1,68 @@
+<%# The auto repair template seeds goal_template as a plain string (no interpolation needed in Phase 1). %>
+<%# We render it as-is here and let the agent use it verbatim. %>
+
+<h1>Create your call plan</h1>
+
+<% if @template %>
+  <p><strong>Template:</strong> <%= @template.name %></p>
+  <p><%= @template.description %></p>
+<% end %>
+
+<%= form_with model: [@delegation, @call_plan] do |form| %>
+  <% if @call_plan.errors.any? %>
+    <ul>
+      <% @call_plan.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <fieldset>
+    <legend>Who are we calling?</legend>
+
+    <p>
+      <%= form.label :target_name, "Business or person name" %><br>
+      <%= form.text_field :target_name, placeholder: "e.g. Maplewood Auto" %>
+    </p>
+
+    <p>
+      <%= form.label :target_phone, "Phone number" %><br>
+      <%= form.telephone_field :target_phone, placeholder: "e.g. 555-867-5309" %>
+    </p>
+  </fieldset>
+
+  <fieldset>
+    <legend>About the caller</legend>
+
+    <p>
+      <%= form.label :caller_name, "Your first name (the AI will use this when identifying you)" %><br>
+      <%= form.text_field :caller_name, placeholder: "e.g. Alex" %>
+    </p>
+  </fieldset>
+
+  <fieldset>
+    <legend>What should the AI do?</legend>
+
+    <p>
+      <%= form.label :goal, "Goal (what the AI should accomplish on the call)" %><br>
+      <%= form.text_area :goal, rows: 3,
+            placeholder: "e.g. Ask whether my vehicle is ready for pickup" %>
+    </p>
+
+    <p>
+      <%= form.label :fallback, "Fallback (what to do if the goal can't be achieved, e.g. nobody answers)" %><br>
+      <%= form.text_area :fallback, rows: 2,
+            placeholder: "e.g. Leave a voicemail asking them to call back" %>
+    </p>
+  </fieldset>
+
+  <%# Hidden array fields — the template pre-fills defaults; the user can customise in the edit view. %>
+  <% (@call_plan.allowed_to_share || []).each do |item| %>
+    <%= form.hidden_field :allowed_to_share, value: item, multiple: true %>
+  <% end %>
+  <% (@call_plan.forbidden_actions || []).each do |item| %>
+    <%= form.hidden_field :forbidden_actions, value: item, multiple: true %>
+  <% end %>
+
+  <p><%= form.submit "Save call plan" %></p>
+<% end %>

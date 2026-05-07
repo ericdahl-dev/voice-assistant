@@ -1,0 +1,84 @@
+name: Preview Branch
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+jobs:
+  create_branch:
+    name: Create Neon branch
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+
+    outputs:
+      database_url: ${{ steps.branch.outputs.db_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install neonctl
+        run: npm install -g neonctl
+
+      - name: Create Neon branch
+        id: branch
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          BRANCH_NAME="pr-${{ github.event.pull_request.number }}"
+          neonctl branches create \
+            --project-id ${{ vars.NEON_PROJECT_ID }} \
+            --name "$BRANCH_NAME" \
+            --parent development \
+            --output json > branch.json 2>&1 || true
+
+          # If branch already exists, just get the connection string
+          DB_URL=$(neonctl connection-string \
+            --project-id ${{ vars.NEON_PROJECT_ID }} \
+            --branch "$BRANCH_NAME" \
+            --role-name neondb_owner \
+            --database-name neondb \
+            --output json 2>/dev/null | tr -d '"')
+
+          echo "db_url=$DB_URL" >> $GITHUB_OUTPUT
+
+  test:
+    name: Test on preview branch
+    needs: create_branch
+    runs-on: ubuntu-latest
+
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: ${{ needs.create_branch.outputs.database_url }}
+      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Set up database
+        run: bin/rails db:schema:load
+
+      - name: Run tests
+        run: bin/rails test
+
+  delete_branch:
+    name: Delete Neon branch
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install neonctl
+        run: npm install -g neonctl
+
+      - name: Delete Neon branch
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+        run: |
+          neonctl branches delete "pr-${{ github.event.pull_request.number }}" \
+            --project-id ${{ vars.NEON_PROJECT_ID }} \
+            --force 2>&1 || echo "Branch already deleted or not found"

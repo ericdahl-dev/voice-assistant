@@ -1,0 +1,11 @@
+<%# Rendered as a Turbo Stream target whenever CallSession#broadcast_status_update fires. %>
+<div id="<%= dom_id(call_session) %>">
+  <strong>Call <%= call_session.id %></strong>
+  &mdash; Status: <strong><%= call_session.status.humanize %></strong>
+  <% if call_session.started_at %>
+    &middot; Started <%= call_session.started_at.strftime("%l:%M %p") %>
+  <% end %>
+  <% if call_session.ended_at %>
+    &middot; Ended <%= call_session.ended_at.strftime("%l:%M %p") %>
+  <% end %>
+</div>
