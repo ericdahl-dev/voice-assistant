@@ -44,9 +44,9 @@ RSpec.describe PlaceCallJob, type: :job do
   end
 
   describe "enqueuing" do
-    it "is enqueued by CallPlan#approve!" do
+    it "is enqueued by CallPlan#enqueue_place_call_job" do
       plan = create(:call_plan)
-      expect { plan.approve! }.to have_enqueued_job(described_class).with(plan.id, session_id: nil)
+      expect { plan.enqueue_place_call_job }.to have_enqueued_job(described_class).with(plan.id, session_id: nil)
     end
   end
 end

@@ -31,7 +31,6 @@ class CallPlan < ApplicationRecord
     raise AlreadyApprovedError, "CallPlan ##{id} has already been approved" if approved?
 
     update!(status: "approved", approved_at: Time.current)
-    enqueue_place_call_job
   end
 
   def scheduled?
