@@ -12,7 +12,7 @@ RSpec.describe "POST /escalations/:id/reply", type: :request do
 
   describe "successful reply" do
     before do
-      allow(VapiAdapter).to receive(:send_message).and_return({})
+      allow(VoiceAgentProvider).to receive(:send_message).and_return({})
     end
 
     it "stores the reply and transitions session to in_conversation" do
@@ -25,8 +25,8 @@ RSpec.describe "POST /escalations/:id/reply", type: :request do
       expect(call_session.reload.status).to eq("in_conversation")
     end
 
-    it "injects message via VapiAdapter" do
-      expect(VapiAdapter).to receive(:send_message).with(
+    it "injects message via VoiceAgentProvider" do
+      expect(VoiceAgentProvider).to receive(:send_message).with(
         vapi_call_id: "vapi-esc-123",
         message: a_string_including("Yes, proceed")
       )
@@ -45,8 +45,8 @@ RSpec.describe "POST /escalations/:id/reply", type: :request do
   describe "timed-out escalation" do
     let(:escalation) { create(:escalation, :timed_out, call_session: call_session) }
 
-    it "redirects with alert and does not call Vapi" do
-      expect(VapiAdapter).not_to receive(:send_message)
+    it "redirects with alert and does not call VoiceAgentProvider" do
+      expect(VoiceAgentProvider).not_to receive(:send_message)
       post reply_escalation_path(escalation), params: { user_reply: "Too late" }
       expect(response).to redirect_to(call_session_path(call_session))
       expect(flash[:alert]).to match(/timeout|passed/i)

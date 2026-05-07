@@ -26,6 +26,22 @@ RSpec.describe VapiAdapter, type: :service do
     end
   end
 
+  describe ".send_message" do
+    let(:instance) { instance_double(described_class) }
+
+    before { allow(described_class).to receive(:new).and_return(instance) }
+
+    it "raises ApiError on Vapi 5xx" do
+      allow(instance).to receive(:send_inject_message).and_raise(VoiceAgentProvider::ApiError, "500")
+      expect { described_class.send_message(vapi_call_id: "call-id-123", message: "hello") }.to raise_error(VoiceAgentProvider::ApiError)
+    end
+
+    it "raises PermanentError on Vapi 4xx" do
+      allow(instance).to receive(:send_inject_message).and_raise(VoiceAgentProvider::PermanentError, "422")
+      expect { described_class.send_message(vapi_call_id: "call-id-123", message: "hello") }.to raise_error(VoiceAgentProvider::PermanentError)
+    end
+  end
+
   describe "first_message (disclosure)" do
     it "includes caller name but not the raw goal" do
       msg = adapter.send(:first_message)

@@ -19,7 +19,7 @@ class EscalationsController < ApplicationController
               "Their answer: #{user_reply}\n" \
               "Please continue the call using this information."
 
-    VapiAdapter.send_message(vapi_call_id: session.vapi_call_id, message: message)
+    VoiceAgentProvider.send_message(vapi_call_id: session.vapi_call_id, message: message)
     session.transition_to!("in_conversation") if session.needs_user?
 
     redirect_to call_session_path(session), notice: "Your reply has been sent to the AI."

@@ -9,8 +9,8 @@ RSpec.describe EscalationTimeoutJob, type: :job do
 
   describe "#perform" do
     context "when unresolved" do
-      it "marks timed_out and sends fallback via Vapi" do
-        expect(VapiAdapter).to receive(:send_message).with(
+      it "marks timed_out and sends fallback via VoiceAgentProvider" do
+        expect(VoiceAgentProvider).to receive(:send_message).with(
           vapi_call_id: "vapi-timeout-1",
           message: a_string_including("did not reply")
         )
@@ -23,7 +23,7 @@ RSpec.describe EscalationTimeoutJob, type: :job do
       let(:escalation) { create(:escalation, :resolved, call_session: call_session) }
 
       it "does nothing" do
-        expect(VapiAdapter).not_to receive(:send_message)
+        expect(VoiceAgentProvider).not_to receive(:send_message)
         described_class.perform_now(escalation.id)
         expect(escalation.reload.timed_out).to be false
       end
@@ -33,7 +33,7 @@ RSpec.describe EscalationTimeoutJob, type: :job do
       let(:escalation) { create(:escalation, :timed_out, call_session: call_session) }
 
       it "does nothing" do
-        expect(VapiAdapter).not_to receive(:send_message)
+        expect(VoiceAgentProvider).not_to receive(:send_message)
         described_class.perform_now(escalation.id)
       end
     end
