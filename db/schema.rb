@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_07_030407) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_07_063355) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -29,6 +29,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_030407) do
     t.string "target_name", null: false
     t.string "target_phone", null: false
     t.datetime "updated_at", null: false
+    t.boolean "voicemail_only", default: false, null: false
     t.index ["delegation_id"], name: "index_call_plans_on_delegation_id"
     t.index ["status"], name: "index_call_plans_on_status"
   end
@@ -70,6 +71,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_030407) do
     t.bigint "user_id", null: false
     t.index ["call_template_id"], name: "index_delegations_on_call_template_id"
     t.index ["user_id"], name: "index_delegations_on_user_id"
+  end
+
+  create_table "escalations", force: :cascade do |t|
+    t.bigint "call_session_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "notified_at"
+    t.text "question"
+    t.datetime "resolved_at"
+    t.boolean "timed_out", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.text "user_reply"
+    t.index ["call_session_id"], name: "index_escalations_on_call_session_id"
   end
 
   create_table "good_job_batches", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -176,6 +189,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_030407) do
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
+    t.string "phone"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
@@ -187,4 +201,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_030407) do
   add_foreign_key "call_plans", "delegations"
   add_foreign_key "call_sessions", "call_plans"
   add_foreign_key "delegations", "users"
+  add_foreign_key "escalations", "call_sessions"
 end
