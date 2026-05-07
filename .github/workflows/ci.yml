@@ -25,7 +25,7 @@ jobs:
           bundler-cache: true
 
       - name: Cache assets
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             public/assets
@@ -56,7 +56,7 @@ jobs:
           bundler-cache: true
 
       - name: Cache RuboCop
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.RUBOCOP_CACHE_ROOT }}
           key: rubocop-${{ runner.os }}-${{ hashFiles('.ruby-version', '**/.rubocop.yml', 'Gemfile.lock') }}
