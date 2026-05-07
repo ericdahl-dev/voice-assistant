@@ -10,7 +10,7 @@ class VapiAdapter
 
   # ADR-0003: disclosure is mandatory on every call.
   DISCLOSURE_TEMPLATE = "Hi, I'm an AI assistant calling on behalf of %<caller_name>s. " \
-                        "I have a quick question for you — is now a good time?"
+                        "I have %<question_count>s regarding %<goal_summary>s — is now a good time?"
 
   VOICEMAIL_TEMPLATE = "Hi, this is an AI assistant calling on behalf of %<caller_name>s. " \
                        "I'm calling to %<goal>s. Please call us back at your earliest convenience. Thank you."
@@ -78,8 +78,22 @@ class VapiAdapter
     else
       format(DISCLOSURE_TEMPLATE,
         caller_name: @call_plan.caller_name,
-        goal: @call_plan.goal)
+        goal_summary: summarize_goal,
+        question_count: question_count)
     end
+  end
+
+  def question_count
+    count = @call_plan.questions_to_ask.length
+    count <= 1 ? "a quick question" : "a few quick questions"
+  end
+
+  def summarize_goal
+    goal = @call_plan.goal.strip
+    # Strip leading bullets/numbers, take first line, lowercase, trim punctuation
+    first_line = goal.lines.first.to_s.strip.gsub(/\A[\-\*\d\.]+\s*/, "").gsub(/[?.!]+\z/, "").downcase
+    # Truncate to ~60 chars at a word boundary
+    first_line.length > 60 ? first_line[0, 60].sub(/\s+\S+\z/, "").strip : first_line
   end
 
   def build_system_prompt

@@ -32,6 +32,20 @@ RSpec.describe VapiAdapter, type: :service do
       expect(msg).to include(call_plan.caller_name)
       expect(msg).not_to include(call_plan.goal)
     end
+
+    it "says 'a quick question' when there is one question" do
+      msg = adapter.send(:first_message)
+      expect(msg).to include("a quick question")
+    end
+
+    context "when there are multiple questions" do
+      let(:call_plan) { create(:call_plan, :approved, questions_to_ask: [ "Q1?", "Q2?" ]) }
+
+      it "says 'a few quick questions'" do
+        msg = adapter.send(:first_message)
+        expect(msg).to include("a few quick questions")
+      end
+    end
   end
 
   describe "system prompt" do
