@@ -63,7 +63,7 @@ class CallPlansController < ApplicationController
   def call_plan_params
     params.expect(
       call_plan: [
-        :target_name, :target_phone, :caller_name, :goal, :fallback, :voicemail_only,
+        :target_name, :target_phone, :target_contact_name, :caller_name, :goal, :fallback, :voicemail_only,
         allowed_to_share: [], questions_to_ask: [],
         allowed_decisions: [], forbidden_actions: []
       ]
