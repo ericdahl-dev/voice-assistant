@@ -58,6 +58,21 @@ class CallPlansController < ApplicationController
     redirect_to delegation_call_plan_path(@delegation), alert: "This call plan has already been approved."
   end
 
+  def run_again
+    @call_plan = @delegation.call_plan
+
+    if @call_plan.call_sessions.where(status: %w[drafted queued dialing connected in_conversation needs_user]).exists?
+      return redirect_to delegation_call_plan_path(@delegation),
+        alert: "A call is already in progress — wait for it to finish before running again."
+    end
+
+    session = @call_plan.call_sessions.create!(status: "drafted")
+    PlaceCallJob.perform_later(@call_plan.id, session_id: session.id)
+    redirect_to call_session_path(session), notice: "Running the call again — a new session has been queued."
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to delegation_call_plan_path(@delegation), alert: "Could not run again: #{e.message}"
+  end
+
   private
 
   def set_delegation
