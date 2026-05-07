@@ -10,7 +10,7 @@ class VapiAdapter
 
   # ADR-0003: disclosure is mandatory on every call.
   DISCLOSURE_TEMPLATE = "Hi, I'm an AI assistant calling on behalf of %<caller_name>s. " \
-                        "I'm calling to %<goal>s. Is it okay if I continue?"
+                        "I have a quick question for you — is now a good time?"
 
   VOICEMAIL_TEMPLATE = "Hi, this is an AI assistant calling on behalf of %<caller_name>s. " \
                        "I'm calling to %<goal>s. Please call us back at your earliest convenience. Thank you."
@@ -86,7 +86,9 @@ class VapiAdapter
     sections = []
 
     sections << "You are an AI assistant placing a call on behalf of #{@call_plan.caller_name}."
-    sections << "Goal: #{@call_plan.goal}"
+    sections << "Your goal: #{@call_plan.goal}"
+    sections << "IMPORTANT: Start by asking if it's a good time. Once the recipient confirms they are ready, " \
+                "then naturally work toward your goal. Do not state the goal verbatim — phrase it conversationally."
 
     if @call_plan.allowed_to_share.any?
       sections << "You may share the following information if asked:\n" +

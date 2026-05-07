@@ -27,10 +27,10 @@ RSpec.describe VapiAdapter, type: :service do
   end
 
   describe "first_message (disclosure)" do
-    it "always includes caller name and goal" do
+    it "includes caller name but not the raw goal" do
       msg = adapter.send(:first_message)
       expect(msg).to include(call_plan.caller_name)
-      expect(msg).to include(call_plan.goal)
+      expect(msg).not_to include(call_plan.goal)
     end
   end
 
@@ -77,11 +77,11 @@ RSpec.describe VapiAdapter, type: :service do
     end
   end
   describe "disclosure enforcement" do
-    it "firstMessage contains the disclosure verbatim with caller name and goal" do
+    it "firstMessage contains caller name and AI disclosure but not raw goal" do
       config = adapter.send(:build_assistant_config)
       expect(config[:firstMessage]).to include(call_plan.caller_name)
-      expect(config[:firstMessage]).to include(call_plan.goal)
       expect(config[:firstMessage]).to include("AI assistant")
+      expect(config[:firstMessage]).not_to include(call_plan.goal)
     end
 
     it "every build_call_payload includes firstMessage" do
