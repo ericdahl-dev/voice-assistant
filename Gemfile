@@ -49,10 +49,14 @@ group :development, :test do
   gem "brakeman", require: false
   gem "rubocop-rails-omakase", require: false
   gem "dotenv-rails"
+  gem "rspec-rails"
+  gem "factory_bot_rails"
 end
 
 group :test do
   gem "rails-controller-testing"
+  gem "shoulda-matchers"
+  gem "guard-rspec", require: false
 end
 
 group :development do

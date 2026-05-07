@@ -30,6 +30,7 @@ class CallPlan < ApplicationRecord
     raise AlreadyApprovedError, "CallPlan ##{id} has already been approved" if approved?
 
     update!(status: "approved", approved_at: Time.current)
+    PlaceCallJob.perform_later(id)
   end
 
   class AlreadyApprovedError < StandardError; end
