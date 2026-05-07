@@ -34,11 +34,11 @@ class OutcomeExtractor
   def voicemail_outcome
     summary = if @transcript.present?
       prompt = "#{VOICEMAIL_PROMPT}\n\nTranscript:\n#{@transcript}"
-      request_openai(messages: [{role: "user", content: prompt}], temperature: 0.2)
+      request_openai(messages: [ { role: "user", content: prompt } ], temperature: 0.2)
     else
       "Left a voicemail stating the purpose of the call."
     end
-    {"status" => "voicemail", "summary" => summary}
+    { "status" => "voicemail", "summary" => summary }
   end
 
   def build_messages
@@ -82,7 +82,7 @@ class OutcomeExtractor
   end
 
   def post_to_openai(messages)
-    request_openai(messages: messages, temperature: 0, response_format: {type: "json_object"})
+    request_openai(messages: messages, temperature: 0, response_format: { type: "json_object" })
   end
 
   def request_openai(messages:, temperature: 0, response_format: nil)
@@ -91,7 +91,7 @@ class OutcomeExtractor
       "Content-Type" => "application/json",
       "Authorization" => "Bearer #{openai_api_key}"
     })
-    body = {model: MODEL, messages: messages, temperature: temperature}
+    body = { model: MODEL, messages: messages, temperature: temperature }
     body[:response_format] = response_format if response_format
     request.body = body.to_json
 
