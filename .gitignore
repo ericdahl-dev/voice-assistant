@@ -39,3 +39,4 @@
 
 # Agent skill caches (pulled in by bd/beads)
 .agents/
+.env
