@@ -2,8 +2,6 @@ class WebhooksController < ApplicationController
   skip_before_action :authenticate_user!
   skip_before_action :verify_authenticity_token
 
-  VAPI_SIGNATURE_HEADER = "x-vapi-signature"
-
   def vapi
     unless valid_signature?
       head :unauthorized
@@ -24,8 +22,6 @@ class WebhooksController < ApplicationController
     secret = Rails.application.credentials.vapi_webhook_secret
     return true if secret.blank? && !Rails.env.production?
 
-    received = request.headers[VAPI_SIGNATURE_HEADER].to_s
-    expected = OpenSSL::HMAC.hexdigest("SHA256", secret, request.raw_post)
-    ActiveSupport::SecurityUtils.secure_compare(received, expected)
+    request.headers["Authorization"] == "Bearer #{secret}"
   end
 end
