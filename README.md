@@ -56,9 +56,9 @@ Terminal states: `completed`, `failed`, `voicemail`
 | Authentication | Devise |
 | Voice platform | [Vapi](https://vapi.ai) |
 | LLM | OpenAI GPT-4o |
-| Voice synthesis | ElevenLabs (Rachel voice) |
+| Voice synthesis | OpenAI (`alloy` voice via Vapi) |
 | Escalation notifications | Pushover + Twilio SMS (both fire in parallel) |
-| Deployment | Kamal + Docker |
+| Deployment | Coolify / Docker Compose |
 | Asset pipeline | Propshaft + import maps |
 
 ---
@@ -133,13 +133,19 @@ This starts the Rails server and the Tailwind CSS watcher via Foreman/`Procfile.
 ## Running Tests
 
 ```bash
-bundle exec rspec
+bundle exec parallel_rspec spec/
 ```
 
 For continuous testing during development:
 
 ```bash
 bundle exec guard
+```
+
+For a single targeted run:
+
+```bash
+bundle exec rspec spec/path/to/file_spec.rb
 ```
 
 ---
@@ -194,11 +200,14 @@ Set `vapi_webhook_secret` in your credentials (or `VAPI_WEBHOOK_SECRET` env var)
 
 ## Deployment
 
-This app is configured for [Kamal](https://kamal-deploy.org) deployment. See `.kamal/` and `config/deploy.yml` for configuration.
+### Coolify (recommended)
 
-### Coolify (Dockerfile)
+Use `docker-compose.yml` at the repo root. Run **two** services from the same image: **web** (Thruster + Rails, port 80) and **worker** (`bundle exec good_job start`). Use an external Postgres URL (e.g. Neon) as `DATABASE_URL`.
 
-Run **two** resources from the same image: **web** (default `CMD`, listens on **port 80**) and **worker** (`bundle exec good_job start`). Use an external Postgres URL (e.g. Neon) as `DATABASE_URL`.
+```bash
+# point Coolify at docker-compose.yml, or run locally:
+docker compose up
+```
 
 **Required / common environment variables**
 
@@ -216,22 +225,7 @@ Optional: `RAILS_ALLOWED_HOSTS` (comma-separated extra hosts, e.g. `www.example.
 
 After first deploy, migrations run via `bin/docker-entrypoint` (`db:prepare` on web boot). Promote an admin user for `/good_job`.
 
-```bash
-kamal setup    # first-time server provisioning
-kamal deploy   # deploy a new version
-```
-
-The Docker image uses a multi-stage build. The `RAILS_MASTER_KEY` environment variable must be set on the server.
-
-To run with Docker directly:
-
-```bash
-docker build -t voice_assistant .
-docker run -d -p 80:80 \
-  -e RAILS_MASTER_KEY=<your master key> \
-  -e DATABASE_URL=<your postgres url> \
-  --name voice_assistant voice_assistant
-```
+The Docker image uses a multi-stage build. Migrations run automatically via `bin/docker-entrypoint` on web boot (`db:prepare`). Promote an admin user for `/good_job` after first deploy.
 
 ---
 
@@ -249,9 +243,9 @@ bundle exec bundler-audit     # check gems for known CVEs
 ```
 app/
   controllers/    # Delegations, CallPlans, CallSessions, Webhooks
-  jobs/           # PlaceCallJob (places the Vapi call)
+  jobs/           # PlaceCallJob, ExtractOutcomeJob, EscalationTimeoutJob
   models/         # Delegation, CallPlan, CallSession, CallTemplate, User
-  services/       # VapiAdapter, WebhookProcessor, VoiceAgentProvider
+  services/       # VapiAdapter, OutcomeExtractor, WebhookProcessor, VoiceAgentProvider, EscalationNotifier
   views/          # Hotwire/Turbo templates
 config/
   routes.rb
