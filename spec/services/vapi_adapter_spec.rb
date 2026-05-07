@@ -7,6 +7,7 @@ RSpec.describe VapiAdapter, type: :service do
   before do
     allow(adapter).to receive(:vapi_phone_number_id).and_return("phone-num-stub")
     allow(adapter).to receive(:api_key).and_return("key-stub")
+    allow(adapter).to receive(:summarize_goal).and_return("a vehicle status check")
   end
 
   describe "#call" do

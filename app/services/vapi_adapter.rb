@@ -1,5 +1,6 @@
 require "net/http"
 require "json"
+require "openai"
 
 # Translates a CallPlan into a Vapi assistant + call config and places the call.
 # Returns a call_id string on success. Contains no business logic — only
@@ -91,10 +92,37 @@ class VapiAdapter
   end
 
   def summarize_goal
+    key = Rails.application.credentials[:openai_api_key] || ENV["OPENAI_API_KEY"]
+    return summarize_goal_fallback unless key.present?
+
+    client = OpenAI::Client.new(access_token: key)
+    response = client.chat(
+      parameters: {
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You summarize a caller's goal into a short, natural phrase (3-6 words) " \
+                     "suitable for spoken disclosure, like \"a vehicle status check\" or " \
+                     "\"a prescription refill request\". Lowercase. No punctuation at the end. " \
+                     "Never quote the original text verbatim."
+          },
+          { role: "user", content: @call_plan.goal }
+        ],
+        max_tokens: 20,
+        temperature: 0.3
+      }
+    )
+    result = response.dig("choices", 0, "message", "content").to_s.strip.downcase.gsub(/[.!?]+\z/, "")
+    result.present? ? result : summarize_goal_fallback
+  rescue => e
+    Rails.logger.warn("[VapiAdapter] summarize_goal LLM failed: #{e.message}")
+    summarize_goal_fallback
+  end
+
+  def summarize_goal_fallback
     goal = @call_plan.goal.strip
-    # Strip leading bullets/numbers, take first line, lowercase, trim punctuation
     first_line = goal.lines.first.to_s.strip.gsub(/\A[\-\*\d\.]+\s*/, "").gsub(/[?.!]+\z/, "").downcase
-    # Truncate to ~60 chars at a word boundary
     first_line.length > 60 ? first_line[0, 60].sub(/\s+\S+\z/, "").strip : first_line
   end
 
