@@ -50,6 +50,7 @@ class WebhookProcessor
     end
 
     safely_transition_to(new_status)
+    enqueue_outcome_extraction if %w[completed voicemail].include?(new_status)
   end
 
   def handle_transcript_chunk
@@ -89,5 +90,9 @@ class WebhookProcessor
 
   def currently_connected?
     %w[connected in_conversation needs_user].include?(@session.status)
+  end
+
+  def enqueue_outcome_extraction
+    ExtractOutcomeJob.perform_later(@session.id)
   end
 end
