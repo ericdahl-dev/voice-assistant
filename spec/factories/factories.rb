@@ -43,12 +43,14 @@ FactoryBot.define do
     association :call_plan, factory: [ :call_plan, :approved ]
     status { "drafted" }
 
-    trait :completed do
-      status { "completed" }
-    end
-
     trait :voicemail do
       status { "voicemail" }
+      vapi_call_id { "vapi-#{SecureRandom.hex(6)}" }
+    end
+
+    trait :completed do
+      status { "completed" }
+      vapi_call_id { "vapi-#{SecureRandom.hex(6)}" }
     end
   end
 
