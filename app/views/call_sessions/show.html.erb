@@ -80,4 +80,14 @@
       </div>
     </div>
   </details>
+
+  <%# Retry call button for terminal sessions %>
+  <% if @call_session.terminal? && @call_session.outcome&.dig("status") != "success" %>
+    <div class="mt-6 flex justify-end">
+      <%= button_to "Retry call", retry_call_session_path(@call_session),
+            method: :post,
+            class: "btn-secondary",
+            data: {confirm: "This will place a new call using the same plan. Continue?"} %>
+    </div>
+  <% end %>
 </div>

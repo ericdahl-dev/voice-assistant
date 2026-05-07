@@ -1,0 +1,57 @@
+<% content_for :title, "Delegation ##{@delegation.id}" %>
+
+<div class="max-w-2xl mx-auto py-8 px-4">
+  <div class="mb-6">
+    <%= link_to "← Back to Delegations", delegations_path, class: "text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" %>
+  </div>
+
+  <h1 class="text-2xl font-semibold text-slate-900 dark:text-white mb-2">
+    <%= @delegation.call_template&.name || "Custom delegation" %>
+  </h1>
+  <p class="text-sm text-slate-400 mb-8">Created <%= @delegation.created_at.strftime("%b %-d, %Y") %></p>
+
+  <% if @delegation.call_plan %>
+    <div class="mb-8">
+      <p class="section-title">Call plan</p>
+      <div class="card card-body flex items-center justify-between gap-4">
+        <div>
+          <p class="text-sm font-medium text-slate-800 dark:text-slate-200"><%= @delegation.call_plan.goal %></p>
+          <p class="text-xs text-slate-400 mt-0.5">
+            <%= @delegation.call_plan.target_name %> · <%= @delegation.call_plan.target_phone %>
+          </p>
+        </div>
+        <%= link_to "View plan", delegation_call_plan_path(@delegation), class: "btn-secondary text-xs shrink-0" %>
+      </div>
+    </div>
+  <% end %>
+
+  <div>
+    <p class="section-title">Call history</p>
+    <% sessions = @delegation.call_sessions.order(created_at: :desc) %>
+    <% if sessions.any? %>
+      <div class="card divide-y divide-slate-100 dark:divide-slate-700">
+        <% sessions.each_with_index do |session, i| %>
+          <div class="px-6 py-4 flex items-center justify-between gap-4">
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-slate-800 dark:text-slate-200">
+                Call #<%= sessions.count - i %>
+                <% if session.outcome&.dig("status").present? %>
+                  <span class="ml-2 text-xs font-normal text-slate-400">— <%= session.outcome["status"].capitalize %></span>
+                <% end %>
+              </p>
+              <p class="text-xs text-slate-400 mt-0.5"><%= session.created_at.strftime("%b %-d, %Y %H:%M") %> · <%= session.status.humanize %></p>
+              <% if session.outcome&.dig("summary").present? %>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1"><%= session.outcome["summary"] %></p>
+              <% end %>
+            </div>
+            <%= link_to "View", call_session_path(session), class: "btn-secondary text-xs shrink-0" %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="card card-body text-center py-8">
+        <p class="text-sm text-slate-400">No call sessions yet.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

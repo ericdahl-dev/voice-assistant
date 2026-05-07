@@ -11,13 +11,16 @@ class PlaceCallJob < ApplicationJob
 
   # Idempotent: if a CallSession already exists for this CallPlan and is past
   # drafted state, a previous run succeeded — skip silently.
-  def perform(call_plan_id)
+  def perform(call_plan_id, session_id: nil)
     call_plan = CallPlan.find(call_plan_id)
 
-    existing = call_plan.call_sessions.where.not(status: "drafted").first
-    return if existing
-
-    session = call_plan.call_sessions.create!(status: "drafted")
+    session = if session_id
+      CallSession.find(session_id)
+    else
+      existing = call_plan.call_sessions.where.not(status: "drafted").first
+      return if existing
+      call_plan.call_sessions.create!(status: "drafted")
+    end
     @session_id = session.id
 
     session.transition_to!("queued")

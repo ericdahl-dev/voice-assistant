@@ -74,5 +74,4 @@ FactoryBot.define do
       timed_out { true }
     end
   end
-
 end
