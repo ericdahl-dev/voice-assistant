@@ -52,8 +52,11 @@ class CallPlansController < ApplicationController
 
   def approve
     @call_plan = @delegation.call_plan
+    scheduled_at = parse_scheduled_at(params[:scheduled_at])
+    @call_plan.update!(scheduled_at: scheduled_at) if scheduled_at
     @call_plan.approve!
-    redirect_to delegation_call_plan_path(@delegation), notice: "Call plan approved! The AI will make the call shortly."
+    notice = @call_plan.scheduled? ? "Call scheduled for #{@call_plan.scheduled_at.strftime("%B %-d at %l:%M %p %Z")}." : "Call plan approved! The AI will make the call shortly."
+    redirect_to delegation_call_plan_path(@delegation), notice: notice
   rescue CallPlan::AlreadyApprovedError
     redirect_to delegation_call_plan_path(@delegation), alert: "This call plan has already been approved."
   end
@@ -67,8 +70,9 @@ class CallPlansController < ApplicationController
     end
 
     session = @call_plan.call_sessions.create!(status: "drafted")
-    PlaceCallJob.perform_later(@call_plan.id, session_id: session.id)
-    redirect_to call_session_path(session), notice: "Running the call again — a new session has been queued."
+    @call_plan.enqueue_place_call_job(session_id: session.id)
+    notice = @call_plan.scheduled? ? "Call scheduled for #{@call_plan.scheduled_at.strftime("%B %-d at %l:%M %p %Z")}." : "Running the call again — a new session has been queued."
+    redirect_to call_session_path(session), notice: notice
   rescue ActiveRecord::RecordInvalid => e
     redirect_to delegation_call_plan_path(@delegation), alert: "Could not run again: #{e.message}"
   end
@@ -83,9 +87,17 @@ class CallPlansController < ApplicationController
     params.expect(
       call_plan: [
         :target_name, :target_phone, :target_contact_name, :caller_name, :goal, :fallback, :voicemail_only,
+        :scheduled_at,
         allowed_to_share: [], questions_to_ask: [],
         allowed_decisions: [], forbidden_actions: []
       ]
     )
+  end
+
+  def parse_scheduled_at(value)
+    return nil if value.blank?
+    Time.zone.parse(value.to_s)
+  rescue ArgumentError, TypeError
+    nil
   end
 end

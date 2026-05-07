@@ -34,12 +34,62 @@ RSpec.describe CallPlan, type: :model do
     end
 
     it "enqueues PlaceCallJob" do
-      expect { plan.approve! }.to have_enqueued_job(PlaceCallJob).with(plan.id)
+      expect { plan.approve! }.to have_enqueued_job(PlaceCallJob).with(plan.id, session_id: nil)
     end
 
     it "raises AlreadyApprovedError when called twice" do
       plan.approve!
       expect { plan.approve! }.to raise_error(CallPlan::AlreadyApprovedError)
+    end
+
+    context "with a future scheduled_at" do
+      let(:plan) { create(:call_plan, scheduled_at: 1.hour.from_now) }
+
+      it "enqueues PlaceCallJob with wait_until" do
+        expect { plan.approve! }.to have_enqueued_job(PlaceCallJob)
+          .with(plan.id, session_id: nil)
+          .at(plan.scheduled_at)
+      end
+    end
+  end
+
+  describe "#scheduled?" do
+    it "returns false when scheduled_at is nil" do
+      plan = build(:call_plan, scheduled_at: nil)
+      expect(plan.scheduled?).to be false
+    end
+
+    it "returns false when scheduled_at is in the past" do
+      plan = build(:call_plan, scheduled_at: 1.hour.ago)
+      expect(plan.scheduled?).to be false
+    end
+
+    it "returns true when scheduled_at is in the future" do
+      plan = build(:call_plan, scheduled_at: 1.hour.from_now)
+      expect(plan.scheduled?).to be true
+    end
+  end
+
+  describe "#enqueue_place_call_job" do
+    it "enqueues immediately when not scheduled" do
+      plan = create(:call_plan)
+      expect { plan.enqueue_place_call_job }.to have_enqueued_job(PlaceCallJob)
+        .with(plan.id, session_id: nil)
+    end
+
+    it "enqueues with wait_until when scheduled" do
+      future = 2.hours.from_now
+      plan = create(:call_plan, scheduled_at: future)
+      expect { plan.enqueue_place_call_job }.to have_enqueued_job(PlaceCallJob)
+        .with(plan.id, session_id: nil)
+        .at(future)
+    end
+
+    it "passes session_id through" do
+      plan = create(:call_plan, :approved)
+      session = create(:call_session, call_plan: plan)
+      expect { plan.enqueue_place_call_job(session_id: session.id) }
+        .to have_enqueued_job(PlaceCallJob).with(plan.id, session_id: session.id)
     end
   end
 

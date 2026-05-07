@@ -31,7 +31,19 @@ class CallPlan < ApplicationRecord
     raise AlreadyApprovedError, "CallPlan ##{id} has already been approved" if approved?
 
     update!(status: "approved", approved_at: Time.current)
-    PlaceCallJob.perform_later(id)
+    enqueue_place_call_job
+  end
+
+  def scheduled?
+    scheduled_at.present? && scheduled_at.future?
+  end
+
+  def enqueue_place_call_job(session_id: nil)
+    if scheduled?
+      PlaceCallJob.set(wait_until: scheduled_at).perform_later(id, session_id: session_id)
+    else
+      PlaceCallJob.perform_later(id, session_id: session_id)
+    end
   end
 
   class AlreadyApprovedError < StandardError; end
