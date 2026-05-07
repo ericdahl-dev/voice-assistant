@@ -16,6 +16,9 @@ class EscalationNotifier
 
   def notify
     send_pushover
+  rescue StandardError => e
+    Rails.logger.error("[EscalationNotifier] Failed to notify: #{e.class}: #{e.message}")
+  ensure
     @escalation.update!(notified_at: Time.current)
     EscalationTimeoutJob.set(wait: TIMEOUT_SECONDS.seconds).perform_later(@escalation.id)
   end
@@ -34,8 +37,8 @@ class EscalationNotifier
     response = Net::HTTP.post_form(uri, {
       token: api_token,
       user: user_key,
-      title: "AI needs your input",
-      message: @escalation.question.presence || "The AI needs your input to continue the call.",
+      title: "Call on hold",
+      message: notification_message,
       priority: 1,
       sound: "pushover"
     })
@@ -48,6 +51,12 @@ class EscalationNotifier
     unless response.code.to_i == 1 || body["status"] == 1
       Rails.logger.warn("[EscalationNotifier] Pushover returned status #{response.code}: #{response.body}")
     end
+  end
+
+  def notification_message
+    question = @escalation.question.presence || "The AI needs your input to continue the call."
+    session_path = Rails.application.routes.url_helpers.call_session_path(@escalation.call_session)
+    "#{question}\n\nReply in app: #{session_path}"
   end
 
   class NotConfiguredError < StandardError; end
