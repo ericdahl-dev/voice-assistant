@@ -34,11 +34,13 @@ RSpec.describe EscalationNotifier, type: :service do
       expect(escalation.reload.notified_at).to be_present
     end
 
-    it "includes a reply URL in the Pushover message" do
+    it "includes a reply URL as the Pushover url param" do
       stub_pushover
       described_class.notify(escalation: escalation, user: user)
       expect(Net::HTTP).to have_received(:post_form) do |_uri, params|
-        expect(params[:message]).to include("call_sessions")
+        expect(params[:url]).to include("call_sessions")
+        expect(params[:url_title]).to eq("Review & confirm")
+        expect(params[:message]).not_to include("call_sessions")
       end
     end
 
