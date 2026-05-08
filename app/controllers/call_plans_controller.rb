@@ -24,7 +24,7 @@ class CallPlansController < ApplicationController
     if @call_plan.save
       redirect_to delegation_call_plan_path(@delegation), notice: "Call plan saved. Review it below, then approve when ready."
     else
-      @call_plan_variables = call_plan_variable_params(@template)
+      @call_plan_variables = @template ? call_plan_variable_params(@template) : {}
       render :new, status: :unprocessable_entity
     end
   end
