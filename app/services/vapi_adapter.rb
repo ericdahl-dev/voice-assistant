@@ -212,8 +212,8 @@ class VapiAdapter
   end
 
   def webhook_url
-    base = Rails.application.credentials.dig(:vapi, :webhook_base_url) ||
-      ENV["WEBHOOK_BASE_URL"]
+    base = ENV["WEBHOOK_BASE_URL"] ||
+      Rails.application.credentials.dig(:vapi, :webhook_base_url)
     return nil if base.blank?
 
     "#{base.chomp("/")}/webhooks/vapi"
