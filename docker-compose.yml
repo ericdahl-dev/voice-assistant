@@ -2,8 +2,8 @@ services:
   web:
     build: .
     command: ["./bin/thrust", "./bin/rails", "server"]
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     environment:
       RAILS_MASTER_KEY: ${RAILS_MASTER_KEY}
       DATABASE_URL: ${DATABASE_URL}
