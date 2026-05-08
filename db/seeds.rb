@@ -3,6 +3,7 @@
 
 CallTemplate.find_or_create_by!(name: "Auto Repair Status Check") do |t|
   t.description = "Call an auto repair shop to ask whether a vehicle is ready for pickup."
+  t.intro_topic = "a vehicle status check"
 
   t.goal_template = "Ask whether the vehicle is ready for pickup. " \
                     "If it is ready, find out if there are any additional charges beyond the original estimate. " \
@@ -39,6 +40,7 @@ end
 
 CallTemplate.find_or_create_by!(name: "Restaurant Reservation") do |t|
   t.description = "Call a restaurant to make a dining reservation."
+  t.intro_topic = "a reservation"
 
   t.goal_template = "Make a reservation for a party of the requested size on the requested date and time. " \
                     "If the exact time is unavailable, ask for the nearest available time slot. " \
@@ -81,6 +83,7 @@ end
 
 CallTemplate.find_or_create_by!(name: "Pharmacy Prescription Status") do |t|
   t.description = "Call a pharmacy to check if a prescription is ready for pickup."
+  t.intro_topic = "a prescription"
 
   t.goal_template = "Ask whether the prescription for the patient is ready for pickup. " \
                     "If it is ready, confirm the pickup location and hours. " \
@@ -118,6 +121,7 @@ end
 
 CallTemplate.find_or_create_by!(name: "Home Service Scheduling") do |t|
   t.description = "Call a home service provider to schedule an appointment for repairs or maintenance."
+  t.intro_topic = "a service appointment"
 
   t.goal_template = "Schedule a home service appointment for the requested type of work. " \
                     "Ask about available appointment times on or near the preferred date. " \
@@ -161,6 +165,7 @@ end
 
 CallTemplate.find_or_create_by!(name: "Appointment Confirmation") do |t|
   t.description = "Call a doctor, dentist, vet, or other provider to confirm an upcoming appointment."
+  t.intro_topic = "an appointment"
 
   t.goal_template = "Confirm that the appointment for the patient is still scheduled for the requested date and time. " \
                     "If the appointment needs to be rescheduled, ask for the next available time. " \
@@ -201,6 +206,7 @@ end
 
 CallTemplate.find_or_create_by!(name: "Contractor Quote Follow-up") do |t|
   t.description = "Follow up with a contractor who submitted a quote but hasn't been heard from since."
+  t.intro_topic = "a quote follow-up"
 
   t.goal_template = "Follow up on the quote that was submitted for the described work. " \
                     "Confirm whether the quote is still valid and ask about availability to start the job. " \
@@ -240,6 +246,7 @@ end
 
 CallTemplate.find_or_create_by!(name: "Package Delivery Issue") do |t|
   t.description = "Call a carrier or shipper to report a missing, delayed, or damaged package."
+  t.intro_topic = "a delivery issue"
 
   t.goal_template = "Report the issue with the package and ask for a resolution timeline. " \
                     "Get a case or ticket number if one is created. " \
@@ -280,6 +287,7 @@ end
 
 CallTemplate.find_or_create_by!(name: "Pet Grooming Appointment") do |t|
   t.description = "Call a pet groomer to book an appointment for a pet."
+  t.intro_topic = "a grooming appointment"
 
   t.goal_template = "Book a grooming appointment for the pet on or near the preferred date. " \
                     "Confirm the services included, the duration, and the price. " \
@@ -322,6 +330,7 @@ end
 
 CallTemplate.find_or_create_by!(name: "Internet or Utility Outage Report") do |t|
   t.description = "Call an internet or utility provider to report an outage and get an estimated restoration time."
+  t.intro_topic = "an outage report"
 
   t.goal_template = "Report the outage at the service address and ask for an estimated restoration time. " \
                     "Get a trouble ticket or case number if one is created. " \
@@ -361,6 +370,7 @@ end
 
 CallTemplate.find_or_create_by!(name: "Contact a Government Representative") do |t|
   t.description = "Call a congressional office or government representative to express a constituent's position on an issue or piece of legislation."
+  t.intro_topic = "a constituent message"
 
   t.goal_template = "Call the office of the representative and express the constituent's position on the specified issue or legislation. " \
                     "State the constituent's name and that they are a constituent of the representative. " \

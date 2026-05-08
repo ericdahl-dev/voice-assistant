@@ -25,7 +25,8 @@ class PlaceCallJob < ApplicationJob
 
     session.transition_to!("queued")
 
-    goal_summary = GoalSummarizer.call(goal: call_plan.goal)
+    goal_summary = call_plan.call_template&.intro_topic ||
+      GoalSummarizer.call(goal: call_plan.goal)
     result = VapiAdapter.call(call_plan:, goal_summary:)
 
     session.update!(vapi_call_id: result[:call_id])

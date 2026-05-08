@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_08_035341) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_08_171106) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -18,6 +18,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_08_035341) do
     t.jsonb "allowed_decisions", default: [], null: false
     t.jsonb "allowed_to_share", default: [], null: false
     t.datetime "approved_at"
+    t.bigint "call_template_id"
     t.string "caller_name", null: false
     t.datetime "created_at", null: false
     t.bigint "delegation_id", null: false
@@ -33,6 +34,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_08_035341) do
     t.string "target_phone", null: false
     t.datetime "updated_at", null: false
     t.boolean "voicemail_only", default: false, null: false
+    t.index ["call_template_id"], name: "index_call_plans_on_call_template_id"
     t.index ["delegation_id"], name: "index_call_plans_on_delegation_id"
     t.index ["status"], name: "index_call_plans_on_status"
   end
@@ -62,6 +64,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_08_035341) do
     t.jsonb "default_questions_to_ask", default: [], null: false
     t.text "description", null: false
     t.text "goal_template", null: false
+    t.string "intro_topic"
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.jsonb "variable_schema", default: [], null: false
@@ -234,6 +237,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_08_035341) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "call_plans", "call_templates"
   add_foreign_key "call_plans", "delegations"
   add_foreign_key "call_sessions", "call_plans"
   add_foreign_key "delegations", "users"
