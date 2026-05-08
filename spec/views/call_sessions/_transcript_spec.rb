@@ -23,7 +23,7 @@ RSpec.describe "call_sessions/_transcript", type: :view do
     call_session = create(:call_session, call_plan:, transcript: "Agent: First\nAgent: Second\nStaff: Third\nStaff: Fourth")
     render partial: "call_sessions/transcript", locals: { call_session: }
     doc = Nokogiri::HTML.fragment(rendered)
-    labels = doc.css("span").map { _1.text.strip }
+    labels = doc.css("span.transcript-speaker-label").map { _1.text.strip }
 
     expect(labels.count("Agent")).to eq(1)
     expect(labels.count("Staff")).to eq(1)

@@ -34,7 +34,15 @@
 
       <% is_agent = turn[:role] == :agent %>
       <% is_unknown = turn[:role] == :unknown %>
-      <% label = is_agent ? "Agent" : (turn[:speaker] || (is_unknown ? "System" : "Other")) %>
+      <% label = if is_agent
+        "Agent"
+      elsif turn[:speaker]
+        turn[:speaker]
+      elsif is_unknown
+        "System"
+      else
+        "Other"
+      end %>
       <% row_classes = is_agent ? "justify-end" : "justify-start" %>
       <% bubble_classes = if is_agent
         "bg-indigo-600 text-white dark:bg-indigo-500"
@@ -47,7 +55,7 @@
       <div class="flex <%= row_classes %> <%= show_label ? "mt-3" : "mt-1" %>">
         <div class="max-w-[85%] sm:max-w-[75%]">
           <% if show_label %>
-            <span class="block mb-1 text-xs font-semibold uppercase tracking-widest font-mono <%= is_agent ? "text-indigo-600 dark:text-indigo-400 text-right" : "text-slate-500 dark:text-slate-400" %>"><%= label %></span>
+            <span class="transcript-speaker-label block mb-1 text-xs font-semibold uppercase tracking-widest font-mono <%= is_agent ? "text-indigo-600 dark:text-indigo-400 text-right" : "text-slate-500 dark:text-slate-400" %>"><%= label %></span>
           <% end %>
           <div class="rounded-2xl px-3 py-2 shadow-sm <%= bubble_classes %>">
             <p class="text-sm leading-snug break-words"><%= turn[:text] %></p>
