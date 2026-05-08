@@ -11,6 +11,14 @@ RSpec.describe "call_sessions/_transcript", type: :view do
     expect(rendered).to include("justify-end")
   end
 
+  it "renders AI: prefix as agent (right-aligned)" do
+    call_session = create(:call_session, call_plan:, transcript: "AI: Hi there\nUser: Hello?")
+    render partial: "call_sessions/transcript", locals: { call_session: }
+    expect(rendered).to include("Hi there")
+    expect(rendered).to include("justify-end")
+    expect(rendered).to include("justify-start")
+  end
+
   it "renders recipient turn separately from agent turn" do
     call_session = create(:call_session, call_plan:, transcript: "Agent: Hi\nStaff: Yes, ready")
     render partial: "call_sessions/transcript", locals: { call_session: }
