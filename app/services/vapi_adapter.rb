@@ -55,6 +55,9 @@ class VapiAdapter
   end
 
   END_CALL_MESSAGE = "I'm not able to help with that — I'll let you go. Have a great day."
+  END_CALL_FUNCTION_INSTRUCTION = "When you are confident the call is ending (goal completed, recipient is done, " \
+                                  "or no further action is needed), briefly close the conversation and use the " \
+                                  "endCall function to hang up."
 
   def build_assistant_config
     config = {
@@ -139,6 +142,8 @@ class VapiAdapter
     sections << guardrail_instructions
 
     sections << voicemail_instructions
+
+    sections << END_CALL_FUNCTION_INSTRUCTION
 
     sections.join("\n\n")
   end
