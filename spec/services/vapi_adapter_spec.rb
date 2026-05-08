@@ -94,6 +94,10 @@ RSpec.describe VapiAdapter, type: :service do
       expect(prompt).to include("I'm not able to help with that")
     end
 
+    it "instructs the assistant to use endCall when the call is ending" do
+      expect(prompt).to include("use the endCall function to hang up")
+    end
+
     it "forbids sharing info outside allowed_to_share" do
       expect(prompt).to match(/do not.*share|only.*share|never.*share/i)
     end
