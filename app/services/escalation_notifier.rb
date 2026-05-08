@@ -38,7 +38,9 @@ class EscalationNotifier
       title: "Call on hold",
       message: notification_message,
       priority: 1,
-      sound: "pushover"
+      sound: "pushover",
+      url: session_url,
+      url_title: "Review & confirm"
     })
 
     body = begin
@@ -46,15 +48,21 @@ class EscalationNotifier
     rescue JSON::ParserError
       {}
     end
-    unless response.code.to_i == 1 || body["status"] == 1
+    unless body["status"] == 1
       Rails.logger.warn("[EscalationNotifier] Pushover returned status #{response.code}: #{response.body}")
     end
   end
 
   def notification_message
-    question = @escalation.question.presence || "The AI needs your input to continue the call."
-    session_path = Rails.application.routes.url_helpers.call_session_path(@escalation.call_session)
-    "#{question}\n\nReply in app: #{session_path}"
+    @escalation.question.presence || "The AI needs your input to continue the call."
+  end
+
+  def session_url
+    Rails.application.routes.url_helpers.call_session_url(
+      @escalation.call_session,
+      host: Rails.application.config.action_mailer.default_url_options[:host],
+      protocol: Rails.application.config.action_mailer.default_url_options.fetch(:protocol, "https")
+    )
   end
 
   class NotConfiguredError < StandardError; end
