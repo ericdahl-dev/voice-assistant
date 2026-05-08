@@ -20,6 +20,11 @@ class DelegationsController < ApplicationController
     @delegation = current_user.delegations.build(delegation_params)
 
     if @delegation.save
+      PostHog.capture(
+        distinct_id: current_user.posthog_distinct_id,
+        event: "delegation_created",
+        properties: {delegation_id: @delegation.id, call_template_id: @delegation.call_template_id}
+      )
       redirect_to new_delegation_call_plan_path(@delegation)
     else
       @call_templates = ::CallTemplate.order(:name)

@@ -25,6 +25,11 @@ class CallPlansController < ApplicationController
     @call_plan = @delegation.build_call_plan(attrs)
 
     if @call_plan.save
+      PostHog.capture(
+        distinct_id: current_user.posthog_distinct_id,
+        event: "call_plan_created",
+        properties: {call_plan_id: @call_plan.id, delegation_id: @delegation.id, voicemail_only: @call_plan.voicemail_only}
+      )
       redirect_to delegation_call_plan_path(@delegation), notice: "Call plan saved. Review it below, then approve when ready."
     else
       @call_plan_variables = @template ? call_plan_variable_params(@template) : {}
@@ -65,6 +70,11 @@ class CallPlansController < ApplicationController
     scheduled_at = parse_scheduled_at(params[:scheduled_at])
     @call_plan.update!(scheduled_at: scheduled_at) if scheduled_at
     @call_plan.approve!
+    PostHog.capture(
+      distinct_id: current_user.posthog_distinct_id,
+      event: "call_plan_approved",
+      properties: {call_plan_id: @call_plan.id, delegation_id: @delegation.id, voicemail_only: @call_plan.voicemail_only}
+    )
     @call_plan.enqueue_place_call_job
     notice = @call_plan.scheduled? ? "Call scheduled for #{@call_plan.scheduled_at.strftime("%B %-d at %l:%M %p %Z")}." : "Call plan approved! The AI will make the call shortly."
     redirect_to delegation_call_plan_path(@delegation), notice: notice
