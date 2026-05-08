@@ -1,0 +1,92 @@
+<% content_for :title, "Notification Settings" %>
+
+<div class="flex flex-col gap-8">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Notification Settings</h1>
+      <p class="page-subtitle">Configure where you receive escalation alerts</p>
+    </div>
+  </div>
+
+  <%# Existing channels %>
+  <% if @channels.any? %>
+    <div class="flex flex-col gap-4">
+      <p class="section-title">Your channels</p>
+      <% @channels.each do |channel| %>
+        <div class="card">
+          <div class="card-body flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-semibold text-slate-800 dark:text-slate-100 capitalize"><%= channel.channel_type %></span>
+              <% if channel.channel_type == "pushover" %>
+                <span class="text-sm text-slate-500">User key: <%= channel.pushover_user_key %></span>
+              <% elsif channel.channel_type == "telegram" %>
+                <span class="text-sm text-slate-500">Chat ID: <%= channel.telegram_chat_id %></span>
+              <% end %>
+              <% unless channel.enabled? %>
+                <span class="badge badge-neutral">Disabled</span>
+              <% end %>
+            </div>
+            <div class="flex items-center gap-2">
+              <%= button_to "Remove",
+                settings_notifications_channel_path(channel),
+                method: :delete,
+                class: "btn btn-sm btn-danger",
+                data: { turbo_confirm: "Remove this channel?" } %>
+              <%= form_with url: settings_notifications_channel_path(channel), method: :patch, class: "inline" do |f| %>
+                <%= f.hidden_field :notification_channel, value: nil %>
+                <%= f.fields_for :notification_channel, channel do |cf| %>
+                  <%= cf.hidden_field :enabled, value: !channel.enabled %>
+                <% end %>
+                <%= f.submit channel.enabled? ? "Disable" : "Enable", class: "btn btn-sm btn-secondary" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Add channel %>
+  <div class="card">
+    <div class="card-body flex flex-col gap-6">
+      <p class="section-title">Add a channel</p>
+
+      <%# Pushover %>
+      <div>
+        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Pushover</h3>
+        <%= form_with url: settings_notifications_channels_path, method: :post do |f| %>
+          <%= f.hidden_field :notification_channel, value: nil %>
+          <%= f.fields_for :notification_channel, NotificationChannel.new(channel_type: "pushover") do |cf| %>
+            <%= cf.hidden_field :channel_type %>
+            <div class="flex gap-3 items-end">
+              <div class="flex-1">
+                <%= cf.label :pushover_user_key, "Your Pushover User Key", class: "form-label" %>
+                <%= cf.text_field :pushover_user_key, class: "form-input", placeholder: "uXXXXXXXXXXXXXXXXXXXXX" %>
+              </div>
+              <%= f.submit "Add Pushover", class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <%# Telegram %>
+      <div>
+        <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">Telegram</h3>
+        <p class="text-xs text-slate-500 mb-3">Message <strong>@callspark_bot</strong> on Telegram, then paste your Chat ID below.</p>
+        <%= form_with url: settings_notifications_channels_path, method: :post do |f| %>
+          <%= f.hidden_field :notification_channel, value: nil %>
+          <%= f.fields_for :notification_channel, NotificationChannel.new(channel_type: "telegram") do |cf| %>
+            <%= cf.hidden_field :channel_type %>
+            <div class="flex gap-3 items-end">
+              <div class="flex-1">
+                <%= cf.label :telegram_chat_id, "Your Telegram Chat ID", class: "form-label" %>
+                <%= cf.text_field :telegram_chat_id, class: "form-input", placeholder: "123456789" %>
+              </div>
+              <%= f.submit "Add Telegram", class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
