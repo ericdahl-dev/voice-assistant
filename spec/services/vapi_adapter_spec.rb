@@ -202,13 +202,13 @@ RSpec.describe VapiAdapter, type: :service do
 
   describe "handle_response error branches" do
     it "raises PermanentError on 400" do
-      fake = instance_double(Net::HTTPResponse, code: "400", body: {"message" => "bad field"}.to_json)
+      fake = instance_double(Net::HTTPResponse, code: "400", body: { "message" => "bad field" }.to_json)
       allow_any_instance_of(Net::HTTP).to receive(:request).and_return(fake)
       expect { adapter.call }.to raise_error(VoiceAgentProvider::PermanentError, /bad field/)
     end
 
     it "raises ApiError on 500" do
-      fake = instance_double(Net::HTTPResponse, code: "500", body: {"message" => "server error"}.to_json)
+      fake = instance_double(Net::HTTPResponse, code: "500", body: { "message" => "server error" }.to_json)
       allow_any_instance_of(Net::HTTP).to receive(:request).and_return(fake)
       expect { adapter.call }.to raise_error(VoiceAgentProvider::ApiError, /server error/)
     end
@@ -245,7 +245,7 @@ RSpec.describe VapiAdapter, type: :service do
   end
 
   describe "voicemail callback info in system prompt" do
-    let(:call_plan) { create(:call_plan, :approved, allowed_to_share: ["Callback number: 555-1234"]) }
+    let(:call_plan) { create(:call_plan, :approved, allowed_to_share: [ "Callback number: 555-1234" ]) }
     let(:adapter) { described_class.new(call_plan:, goal_summary: "test") }
 
     before do
