@@ -22,6 +22,10 @@ RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
   config.include Devise::Test::IntegrationHelpers, type: :request
   config.include ActiveJob::TestHelper, type: :job
+
+  require "turbo/broadcastable/test_helper"
+  config.include ActiveSupport::Testing::Assertions, type: :model
+  config.include Turbo::Broadcastable::TestHelper, type: :model
 end
 
 Shoulda::Matchers.configure do |config|

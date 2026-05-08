@@ -56,6 +56,7 @@ class CallSession < ApplicationRecord
   # dashboard can reflect progress without a full page reload.
   after_update_commit :broadcast_status_update, if: :saved_change_to_status?
   after_update_commit :broadcast_outcome_update, if: :saved_change_to_outcome?
+  after_update_commit :broadcast_transcript_update, if: :saved_change_to_transcript?
 
   STATUSES.each do |s|
     define_method(:"#{s}?") { status == s }
@@ -115,6 +116,15 @@ class CallSession < ApplicationRecord
       [ call_plan.delegation, :call_sessions ],
       target: "call_session_outcome_#{id}",
       partial: "call_sessions/outcome",
+      locals: { call_session: self }
+    )
+  end
+
+  def broadcast_transcript_update
+    broadcast_replace_to(
+      [ call_plan.delegation, :call_sessions ],
+      target: "call_session_transcript_#{id}",
+      partial: "call_sessions/transcript",
       locals: { call_session: self }
     )
   end

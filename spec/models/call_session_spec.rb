@@ -86,6 +86,26 @@ RSpec.describe CallSession, type: :model do
     end
   end
 
+  describe "transcript broadcast" do
+    it "broadcasts a Turbo Stream replace to the transcript target when transcript changes" do
+      session = create(:call_session, call_plan:)
+      broadcasts = capture_turbo_stream_broadcasts([ call_plan.delegation, :call_sessions ]) do
+        session.update!(transcript: "Agent: Hello\nStaff: Hi")
+      end
+      expect(broadcasts).not_to be_empty
+      expect(broadcasts.first.attr("target")).to eq("call_session_transcript_#{session.id}")
+    end
+
+    it "does not broadcast when transcript is unchanged" do
+      session = create(:call_session, call_plan:, transcript: nil)
+      broadcasts = capture_turbo_stream_broadcasts([ call_plan.delegation, :call_sessions ]) do
+        session.update!(transcript: nil)
+      end
+      transcript_broadcasts = broadcasts.select { |b| b.include?("call_session_transcript_") }
+      expect(transcript_broadcasts).to be_empty
+    end
+  end
+
   describe "outcome jsonb" do
     it "round-trips nested data through the database" do
       session = create(:call_session, call_plan:, outcome: {
