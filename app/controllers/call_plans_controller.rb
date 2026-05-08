@@ -12,12 +12,19 @@ class CallPlansController < ApplicationController
   end
 
   def create
-    @call_plan = @delegation.build_call_plan(call_plan_params)
+    @template = @delegation.call_template
+    attrs = call_plan_params
+
+    if @template
+      attrs = attrs.merge(goal: build_goal_from_template(@template, call_plan_variable_params(@template)))
+    end
+
+    @call_plan = @delegation.build_call_plan(attrs)
 
     if @call_plan.save
       redirect_to delegation_call_plan_path(@delegation), notice: "Call plan saved. Review it below, then approve when ready."
     else
-      @template = @delegation.call_template
+      @call_plan_variables = call_plan_variable_params(@template)
       render :new, status: :unprocessable_entity
     end
   end
@@ -93,6 +100,17 @@ class CallPlansController < ApplicationController
         allowed_decisions: [], forbidden_actions: []
       ]
     )
+  end
+
+  def call_plan_variable_params(template)
+    allowed_keys = template.variable_schema.map { |e| e["key"] }
+    params.fetch(:call_plan_variables, {}).permit(*allowed_keys).to_h
+  end
+
+  def build_goal_from_template(template, variables)
+    goal = template.goal_template.dup
+    variable_summary = variables.reject { |_, v| v.blank? }.map { |k, v| "#{k.humanize}: #{v}" }.join(", ")
+    variable_summary.present? ? "#{goal} (#{variable_summary})" : goal
   end
 
   def parse_scheduled_at(value)

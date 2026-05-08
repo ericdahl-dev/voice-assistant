@@ -17,7 +17,7 @@
   </div>
 
   <%= form_with model: [@delegation, @call_plan], url: delegation_call_plan_path(@delegation), class: "space-y-6" do |f| %>
-    <%= render "call_plans/form_fields", f: f, call_plan: @call_plan %>
+    <%= render "call_plans/form_fields", f: f, call_plan: @call_plan, template: @template, call_plan_variables: @call_plan_variables %>
 
     <div class="flex items-center gap-3 pt-2">
       <%= f.submit "Save call plan", class: "btn-primary btn-lg cursor-pointer" %>
