@@ -16,7 +16,10 @@ class CallPlansController < ApplicationController
     attrs = call_plan_params
 
     if @template
-      attrs = attrs.merge(goal: build_goal_from_template(@template, call_plan_variable_params(@template)))
+      attrs = attrs.merge(
+        goal: build_goal_from_template(@template, call_plan_variable_params(@template)),
+        call_template_id: @template.id
+      )
     end
 
     @call_plan = @delegation.build_call_plan(attrs)
