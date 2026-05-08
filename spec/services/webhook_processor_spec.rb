@@ -204,6 +204,54 @@ RSpec.describe WebhookProcessor do
       end
     end
 
+    context "tool-calls with escalate via toolWithToolCallList" do
+      before { call_session.update!(status: "in_conversation") }
+
+      it "finds escalate tool in toolWithToolCallList" do
+        allow(EscalationNotifier).to receive(:notify).and_return(nil)
+        described_class.new(event("tool-calls",
+          "toolWithToolCallList" => [
+            { "name" => "escalate", "parameters" => { "question" => "Authorise?" } }
+          ])).process
+        expect(call_session.reload.status).to eq("needs_user")
+      end
+
+      it "uses default question when parameters.question is blank" do
+        allow(EscalationNotifier).to receive(:notify)
+        described_class.new(event("tool-calls",
+          "toolCallList" => [
+            { "name" => "escalate", "parameters" => {} }
+          ])).process
+        escalation = call_session.escalations.last
+        expect(escalation.question).to eq("The AI needs your input to continue.")
+      end
+    end
+
+    context "transcript from a non-in_conversation state" do
+      before { call_session.update!(status: "connected") }
+
+      it "transitions connected → in_conversation on final transcript" do
+        described_class.new(event("transcript",
+          "transcriptType" => "final",
+          "transcript" => "Hello world")).process
+        expect(call_session.reload.status).to eq("in_conversation")
+      end
+    end
+
+    context "status-update: forwarding" do
+      it "maps forwarding to connected" do
+        described_class.new(event("status-update", "status" => "forwarding")).process
+        expect(call_session.reload.status).to eq("connected")
+      end
+    end
+
+    context "status-update: unknown vapi status" do
+      it "logs the unhandled status" do
+        expect(Rails.logger).to receive(:info).with(/Unhandled Vapi status/)
+        described_class.new(event("status-update", "status" => "brand-new-status")).process
+      end
+    end
+
     context "unknown event type" do
       it "logs and returns without raising" do
         expect(Rails.logger).to receive(:info).with(/Unknown event type/)

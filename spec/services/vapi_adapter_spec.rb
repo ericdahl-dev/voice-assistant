@@ -188,4 +188,74 @@ RSpec.describe VapiAdapter, type: :service do
       end
     end
   end
+
+  describe ".send_message (integration)" do
+    it "posts inject-message to the correct Vapi endpoint" do
+      stub = instance_double(Net::HTTPResponse, code: "200", body: "{}")
+      allow_any_instance_of(Net::HTTP).to receive(:request).and_return(stub)
+      allow(Rails.application.credentials).to receive(:dig).with(:vapi, :api_key).and_return("key")
+      result = described_class.new(call_plan: nil, goal_summary: nil)
+        .send_inject_message("call-abc", "please continue")
+      expect(result).to eq({})
+    end
+  end
+
+  describe "handle_response error branches" do
+    it "raises PermanentError on 400" do
+      fake = instance_double(Net::HTTPResponse, code: "400", body: { "message" => "bad field" }.to_json)
+      allow_any_instance_of(Net::HTTP).to receive(:request).and_return(fake)
+      expect { adapter.call }.to raise_error(VoiceAgentProvider::PermanentError, /bad field/)
+    end
+
+    it "raises ApiError on 500" do
+      fake = instance_double(Net::HTTPResponse, code: "500", body: { "message" => "server error" }.to_json)
+      allow_any_instance_of(Net::HTTP).to receive(:request).and_return(fake)
+      expect { adapter.call }.to raise_error(VoiceAgentProvider::ApiError, /server error/)
+    end
+  end
+
+  describe "contact name in system prompt" do
+    let(:call_plan) { create(:call_plan, :approved, target_contact_name: "Dr Smith") }
+    let(:adapter) { described_class.new(call_plan:, goal_summary: "test") }
+
+    before do
+      allow(adapter).to receive(:vapi_phone_number_id).and_return("phone-num-stub")
+      allow(adapter).to receive(:api_key).and_return("key-stub")
+    end
+
+    it "includes ask-for-contact instruction when target_contact_name is set" do
+      prompt = adapter.send(:build_system_prompt)
+      expect(prompt).to include("Dr Smith")
+    end
+  end
+
+  describe "fallback in system prompt" do
+    let(:call_plan) { create(:call_plan, :approved, fallback: "Leave a message if no answer") }
+    let(:adapter) { described_class.new(call_plan:, goal_summary: "test") }
+
+    before do
+      allow(adapter).to receive(:vapi_phone_number_id).and_return("phone-num-stub")
+      allow(adapter).to receive(:api_key).and_return("key-stub")
+    end
+
+    it "includes fallback instruction" do
+      prompt = adapter.send(:build_system_prompt)
+      expect(prompt).to include("Leave a message if no answer")
+    end
+  end
+
+  describe "voicemail callback info in system prompt" do
+    let(:call_plan) { create(:call_plan, :approved, allowed_to_share: [ "Callback number: 555-1234" ]) }
+    let(:adapter) { described_class.new(call_plan:, goal_summary: "test") }
+
+    before do
+      allow(adapter).to receive(:vapi_phone_number_id).and_return("phone-num-stub")
+      allow(adapter).to receive(:api_key).and_return("key-stub")
+    end
+
+    it "includes callback number in voicemail instructions" do
+      prompt = adapter.send(:build_system_prompt)
+      expect(prompt).to include("555-1234")
+    end
+  end
 end

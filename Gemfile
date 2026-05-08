@@ -67,6 +67,7 @@ group :test do
   gem "rails-controller-testing"
   gem "shoulda-matchers"
   gem "guard-rspec", require: false
+  gem "simplecov", require: false
 end
 
 group :development do

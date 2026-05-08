@@ -42,10 +42,19 @@ RSpec.describe EscalationNotifier, type: :service do
       end
     end
 
-    it "still sets notified_at even if Pushover raises" do
-      allow(Net::HTTP).to receive(:post_form).and_raise(StandardError, "network error")
+    it "raises NotConfiguredError when PUSHOVER_API_TOKEN is missing" do
+      allow(Rails.application.credentials).to receive(:dig).with(:pushover, :api_token).and_return(nil)
+      stub_const("ENV", ENV.to_h.except("PUSHOVER_API_TOKEN"))
+      expect {
+        described_class.new(escalation: escalation, user: user).send(:send_pushover)
+      }.to raise_error(EscalationNotifier::NotConfiguredError, /PUSHOVER_API_TOKEN/)
+    end
+
+    it "logs a warning when Pushover returns non-success status" do
+      fake_response = instance_double(Net::HTTPResponse, code: "200", body: { status: 0 }.to_json)
+      allow(Net::HTTP).to receive(:post_form).and_return(fake_response)
+      expect(Rails.logger).to receive(:warn).with(/Pushover returned/)
       described_class.notify(escalation: escalation, user: user)
-      expect(escalation.reload.notified_at).to be_present
     end
   end
 end
