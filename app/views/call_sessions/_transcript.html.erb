@@ -34,14 +34,13 @@
 
       <% is_agent = turn[:role] == :agent %>
       <% is_unknown = turn[:role] == :unknown %>
-      <% label = if is_agent
+      <% label = case turn[:role]
+      when :agent
         "Agent"
-      elsif turn[:speaker]
-        turn[:speaker]
-      elsif is_unknown
-        "System"
+      when :recipient
+        turn[:speaker] || "Recipient"
       else
-        "Other"
+        turn[:speaker] || "System"
       end %>
       <% row_classes = is_agent ? "justify-end" : "justify-start" %>
       <% bubble_classes = if is_agent
