@@ -78,10 +78,10 @@ class WebhookProcessor
     safely_transition_to(new_status)
     enqueue_outcome_extraction if %w[completed voicemail].include?(new_status)
 
-    PostHog.capture(
+    Analytics.capture(
       distinct_id: session_distinct_id,
       event: "call_ended",
-      properties: {call_session_id: @session.id, status: new_status, end_reason: @event.dig("call", "endedReason")}
+      properties: { call_session_id: @session.id, status: new_status, end_reason: @event.dig("call", "endedReason") }
     )
   end
 
@@ -117,10 +117,10 @@ class WebhookProcessor
     rescue StandardError => e
       Rails.logger.error("[WebhookProcessor] EscalationNotifier failed: #{e.message}")
     end
-    PostHog.capture(
+    Analytics.capture(
       distinct_id: user.posthog_distinct_id,
       event: "escalation_triggered",
-      properties: {escalation_id: escalation.id, call_session_id: @session.id}
+      properties: { escalation_id: escalation.id, call_session_id: @session.id }
     )
     EscalationTimeoutJob.set(wait: EscalationTimeoutJob::TIMEOUT_SECONDS.seconds).perform_later(escalation.id)
   end

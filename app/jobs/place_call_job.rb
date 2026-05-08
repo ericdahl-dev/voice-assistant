@@ -9,10 +9,10 @@ class PlaceCallJob < ApplicationJob
     job.mark_session_failed!(error.message)
     session = CallSession.find_by(id: job.instance_variable_get(:@session_id))
     if session
-      PostHog.capture(
+      Analytics.capture(
         distinct_id: session.call_plan.delegation.user.posthog_distinct_id,
         event: "call_placement_failed",
-        properties: {call_session_id: session.id, error_message: error.message}
+        properties: { call_session_id: session.id, error_message: error.message }
       )
     end
   end

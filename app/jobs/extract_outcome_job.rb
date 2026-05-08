@@ -18,10 +18,10 @@ class ExtractOutcomeJob < ApplicationJob
 
     session.update!(outcome: outcome)
 
-    PostHog.capture(
+    Analytics.capture(
       distinct_id: session.call_plan.delegation.user.posthog_distinct_id,
       event: "call_outcome_extracted",
-      properties: {call_session_id: session.id, outcome_status: outcome["status"], call_status: session.status}
+      properties: { call_session_id: session.id, outcome_status: outcome["status"], call_status: session.status }
     )
   rescue => e
     Rails.logger.error("[ExtractOutcomeJob] session=#{call_session_id} error=#{e.message}")

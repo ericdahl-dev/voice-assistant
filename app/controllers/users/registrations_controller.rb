@@ -6,7 +6,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
           distinct_id: resource.posthog_distinct_id,
           properties: resource.posthog_properties
         )
-        PostHog.capture(
+        Analytics.capture(
           distinct_id: resource.posthog_distinct_id,
           event: "user_signed_up"
         )

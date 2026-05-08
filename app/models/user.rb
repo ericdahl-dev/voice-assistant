@@ -12,6 +12,6 @@ class User < ApplicationRecord
   end
 
   def posthog_properties
-    {date_joined: created_at&.iso8601}
+    { date_joined: created_at&.iso8601 }
   end
 end

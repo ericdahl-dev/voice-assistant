@@ -21,10 +21,10 @@ class EscalationsController < ApplicationController
 
     VoiceAgentProvider.send_message(vapi_call_id: session.vapi_call_id, message: message)
     session.transition_to!("in_conversation") if session.needs_user?
-    PostHog.capture(
+    Analytics.capture(
       distinct_id: current_user.posthog_distinct_id,
       event: "escalation_replied",
-      properties: {escalation_id: @escalation.id, call_session_id: session.id}
+      properties: { escalation_id: @escalation.id, call_session_id: session.id }
     )
     redirect_to call_session_path(session), notice: "Your reply has been sent to the AI."
   rescue CallSession::InvalidTransitionError, VoiceAgentProvider::ApiError => e
