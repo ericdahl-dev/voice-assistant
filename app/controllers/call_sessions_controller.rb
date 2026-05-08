@@ -16,6 +16,11 @@ class CallSessionsController < ApplicationController
 
     new_session = @call_session.call_plan.call_sessions.create!(status: "drafted")
     PlaceCallJob.perform_later(new_session.call_plan_id, session_id: new_session.id)
+    Analytics.capture(
+      distinct_id: current_user.posthog_distinct_id,
+      event: "call_session_retried",
+      properties: { original_session_id: @call_session.id, new_session_id: new_session.id, previous_status: @call_session.status }
+    )
     redirect_to call_session_path(new_session), notice: "Retrying call — a new session has been queued."
   rescue ActiveRecord::RecordInvalid => e
     redirect_to call_session_path(@call_session), alert: "Could not retry: #{e.message}"

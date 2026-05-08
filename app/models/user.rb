@@ -6,4 +6,12 @@ class User < ApplicationRecord
 
   has_many :delegations, dependent: :destroy
   has_many :notification_channels, dependent: :destroy
+
+  def posthog_distinct_id
+    email
+  end
+
+  def posthog_properties
+    { date_joined: created_at&.iso8601 }
+  end
 end
