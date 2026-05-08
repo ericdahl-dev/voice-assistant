@@ -5,4 +5,5 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   has_many :delegations, dependent: :destroy
+  has_many :notification_channels, dependent: :destroy
 end

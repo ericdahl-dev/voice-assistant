@@ -25,4 +25,11 @@ Rails.application.routes.draw do
   end
 
   root to: "home#index"
+
+  namespace :settings do
+    resource :notifications, only: [ :show ] do
+      resources :channels, only: [ :create, :update, :destroy ],
+        controller: "notifications/channels"
+    end
+  end
 end

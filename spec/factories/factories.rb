@@ -58,6 +58,26 @@ FactoryBot.define do
     end
   end
 
+  factory :notification_channel do
+    user
+    channel_type { "pushover" }
+    enabled { true }
+
+    trait :pushover do
+      channel_type { "pushover" }
+      pushover_user_key { "test-pushover-user-key" }
+    end
+
+    trait :telegram do
+      channel_type { "telegram" }
+      telegram_chat_id { "123456789" }
+    end
+
+    trait :disabled do
+      enabled { false }
+    end
+  end
+
   factory :escalation do
     association :call_session
     question { "Should I accept the extended warranty offer?" }

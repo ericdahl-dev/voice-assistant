@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_07_232408) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_08_035341) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -188,6 +188,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_232408) do
     t.index ["scheduled_at"], name: "index_good_jobs_on_scheduled_at", where: "(finished_at IS NULL)"
   end
 
+  create_table "notification_channels", force: :cascade do |t|
+    t.string "channel_type", null: false
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: true, null: false
+    t.string "pushover_user_key"
+    t.string "telegram_chat_id"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_notification_channels_on_user_id"
+  end
+
   create_table "solid_cable_messages", force: :cascade do |t|
     t.binary "channel", null: false
     t.bigint "channel_hash", null: false
@@ -227,4 +238,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_07_232408) do
   add_foreign_key "call_sessions", "call_plans"
   add_foreign_key "delegations", "users"
   add_foreign_key "escalations", "call_sessions"
+  add_foreign_key "notification_channels", "users"
 end
