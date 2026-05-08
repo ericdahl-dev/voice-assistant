@@ -4,10 +4,10 @@
     call_session.transcript.each_line do |line|
       line = line.chomp
       next if line.blank?
-      if (m = line.match(/\A(Agent|AI|Bot|Staff|User|Recipient):\s*(.*)/i))
+      if (m = line.match(/\A(Agent|Staff|User|Recipient):\s*(.*)/i))
         speaker = m[1].strip
         text    = m[2].strip
-        role    = %w[Agent AI Bot].any? { |s| speaker.casecmp?(s) } ? :agent : :recipient
+        role    = speaker.casecmp?("Agent") ? :agent : :recipient
       else
         speaker = nil
         text    = line
