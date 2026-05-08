@@ -22,6 +22,9 @@ class WebhooksController < ApplicationController
     secret = Rails.application.credentials.vapi_webhook_secret
     return true if secret.blank? && !Rails.env.production?
 
-    request.headers["Authorization"] == "Bearer #{secret}"
+    ActiveSupport::SecurityUtils.secure_compare(
+      request.headers["Authorization"].to_s,
+      "Bearer #{secret}"
+    )
   end
 end
