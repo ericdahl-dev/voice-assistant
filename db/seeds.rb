@@ -359,6 +359,49 @@ CallTemplate.find_or_create_by!(name: "Internet or Utility Outage Report") do |t
   t.default_fallback = "Leave a voicemail reporting the outage and asking for a callback with a restoration estimate."
 end
 
+CallTemplate.find_or_create_by!(name: "Contact a Government Representative") do |t|
+  t.description = "Call a congressional office or government representative to express a constituent's position on an issue or piece of legislation."
+
+  t.goal_template = "Call the office of the representative and express the constituent's position on the specified issue or legislation. " \
+                    "State the constituent's name and that they are a constituent of the representative. " \
+                    "Clearly and respectfully communicate the position and ask that it be logged. " \
+                    "If asked, provide the constituent's zip code to confirm residency. " \
+                    "Do not engage in debate — the goal is to register the position and end the call politely."
+
+  t.variable_schema = [
+    { "key" => "representative_name", "label" => "Representative's name", "required" => true },
+    { "key" => "target_phone", "label" => "Office phone number", "required" => true },
+    { "key" => "caller_name", "label" => "Your full name", "required" => true },
+    { "key" => "zip_code", "label" => "Your zip code", "required" => true },
+    { "key" => "issue", "label" => "Issue or bill name/number", "required" => true },
+    { "key" => "position", "label" => "Your position (e.g. support, oppose)", "required" => true },
+    { "key" => "message", "label" => "Brief message or reason (optional)", "required" => false }
+  ]
+
+  t.default_allowed_to_share = [
+    "The constituent's full name",
+    "The constituent's zip code",
+    "The stated position on the issue",
+    "The optional message or reason provided"
+  ]
+
+  t.default_questions_to_ask = [
+    "Can you confirm that the constituent's position has been logged?",
+    "Is there a reference or confirmation number for the call?"
+  ]
+
+  t.default_allowed_decisions = []
+
+  t.default_forbidden_actions = [
+    "Engage in debate or argument with office staff",
+    "Make any commitments or promises on behalf of the constituent",
+    "Provide any personal information beyond the name and zip code",
+    "Discuss or take a position on any issue not specified by the constituent"
+  ]
+
+  t.default_fallback = "Leave a voicemail clearly stating the constituent's name, zip code, the issue, and their position, and ask that it be logged."
+end
+
 puts "Seeded #{CallTemplate.count} call template(s)."
 
 # Dev user — only created in development, never in production.
