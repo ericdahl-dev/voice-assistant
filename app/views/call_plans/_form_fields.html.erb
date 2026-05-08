@@ -1,4 +1,8 @@
-<%# Shared form fields for CallPlan — used by new and edit %>
+<%# Shared form fields for CallPlan — used by new and edit.
+    Accepts an optional `template` local: when present, renders schema-driven fields
+    instead of the generic goal textarea. %>
+
+<% schema_entries = local_assigns[:template]&.variable_schema.presence %>
 
 <% if call_plan.errors.any? %>
   <div class="error-list mb-6" role="alert">
@@ -13,73 +17,247 @@
   </div>
 <% end %>
 
-<div class="space-y-6">
+<% if schema_entries %>
+  <%# ── SCHEMA-DRIVEN FORM ─────────────────────────────────────────────────── %>
 
-  <%# ── Who are we calling? ── %>
-  <div class="card">
-    <div class="card-header">
-      <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Who are we calling?</h2>
-    </div>
-    <div class="card-body grid sm:grid-cols-2 gap-5">
-      <div class="form-field">
-        <%= f.label :target_name, "Business or person name", class: "form-label" %>
-        <%= f.text_field :target_name, placeholder: "e.g. Maplewood Auto", class: "form-input" %>
+  <%# Keys that map directly to CallPlan model attributes %>
+  <% attr_key_map = {
+    "target_phone"    => :target_phone,
+    "caller_name"     => :caller_name,
+    "shop_name"       => :target_name,
+    "restaurant_name" => :target_name,
+    "pharmacy_name"   => :target_name,
+    "company_name"    => :target_name,
+  } %>
+
+  <%# Hints for well-known variable keys %>
+  <% schema_hints = {
+    "vehicle"         => "e.g. \"2019 Honda Civic\" — the agent will use this to identify your car",
+    "patient_name"    => "Full name as it appears on the prescription",
+    "preferred_time"  => "e.g. \"7:00 PM\" — the agent will try this time and offer to accept ±1 hour",
+    "service_type"    => "e.g. \"HVAC tune-up\" or \"leaking kitchen faucet\"",
+    "preferred_date"  => "e.g. \"Friday May 9\" or \"next Thursday\"",
+    "party_size"      => "Total number of people dining",
+    "service_address" => "Full street address where the work will be performed",
+  } %>
+
+  <% name_entry    = schema_entries.find { |e| attr_key_map[e["key"]] == :target_name } %>
+  <% phone_entry   = schema_entries.find { |e| e["key"] == "target_phone" } %>
+  <% caller_entry  = schema_entries.find { |e| e["key"] == "caller_name" } %>
+  <% extra_entries = schema_entries.reject { |e| attr_key_map.key?(e["key"]) } %>
+
+  <%# Repopulate variable fields on validation re-render %>
+  <% saved_vars = local_assigns[:call_plan_variables] || {} %>
+
+  <div class="space-y-6">
+
+    <%# ── Who are we calling? ── %>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Who are we calling?</h2>
       </div>
-      <div class="form-field">
-        <%= f.label :target_phone, "Phone number", class: "form-label" %>
-        <%= f.telephone_field :target_phone, placeholder: "e.g. (555) 867-5309 or +15558675309", class: "form-input" %>
+      <div class="card-body grid sm:grid-cols-2 gap-5">
+        <% if name_entry %>
+          <div class="form-field">
+            <%= f.label :target_name, class: "form-label" do %>
+              <%= name_entry["label"] %>
+              <% if name_entry["required"] %><span class="text-red-500 ml-0.5">*</span><% end %>
+            <% end %>
+            <%= f.text_field :target_name,
+                  required: name_entry["required"],
+                  placeholder: "e.g. Maplewood Auto",
+                  class: "form-input" %>
+          </div>
+        <% else %>
+          <div class="form-field">
+            <%= f.label :target_name, "Business or person name", class: "form-label" %>
+            <%= f.text_field :target_name, placeholder: "e.g. Maplewood Auto", class: "form-input" %>
+          </div>
+        <% end %>
+
+        <% if phone_entry %>
+          <div class="form-field">
+            <%= f.label :target_phone, class: "form-label" do %>
+              <%= phone_entry["label"] %>
+              <% if phone_entry["required"] %><span class="text-red-500 ml-0.5">*</span><% end %>
+            <% end %>
+            <%= f.telephone_field :target_phone,
+                  required: phone_entry["required"],
+                  placeholder: "e.g. (555) 867-5309 or +15558675309",
+                  class: "form-input" %>
+          </div>
+        <% else %>
+          <div class="form-field">
+            <%= f.label :target_phone, "Phone number", class: "form-label" %>
+            <%= f.telephone_field :target_phone, placeholder: "e.g. (555) 867-5309 or +15558675309", class: "form-input" %>
+          </div>
+        <% end %>
+
+        <div class="form-field">
+          <%= f.label :target_contact_name, "Contact name (optional)", class: "form-label" %>
+          <p class="form-hint">A specific person to ask for at the business.</p>
+          <%= f.text_field :target_contact_name, placeholder: "e.g. Sarah", class: "form-input mt-1" %>
+        </div>
       </div>
-      <div class="form-field">
-        <%= f.label :target_contact_name, "Contact name (optional)", class: "form-label" %>
-        <p class="form-hint">A specific person to ask for at the business.</p>
-        <%= f.text_field :target_contact_name, placeholder: "e.g. Sarah", class: "form-input mt-1" %>
+      <div class="card-body border-t border-slate-100 dark:border-slate-700">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <%= f.check_box :voicemail_only, class: "h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" %>
+          <span class="text-sm text-slate-700 dark:text-slate-300">
+            Number goes straight to voicemail
+            <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">Skip the live-call consent opener and leave a voicemail message directly.</span>
+          </span>
+        </label>
       </div>
     </div>
-    <div class="card-body border-t border-slate-100 dark:border-slate-700">
-      <label class="flex items-center gap-3 cursor-pointer">
-        <%= f.check_box :voicemail_only, class: "h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" %>
-        <span class="text-sm text-slate-700 dark:text-slate-300">
-          Number goes straight to voicemail
-          <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">Skip the live-call consent opener and leave a voicemail message directly.</span>
-        </span>
-      </label>
+
+    <%# ── Caller identity ── %>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Caller identity</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-field max-w-sm">
+          <% if caller_entry %>
+            <%= f.label :caller_name, class: "form-label" do %>
+              <%= caller_entry["label"] %>
+              <% if caller_entry["required"] %><span class="text-red-500 ml-0.5">*</span><% end %>
+            <% end %>
+          <% else %>
+            <%= f.label :caller_name, "Your first name", class: "form-label" %>
+          <% end %>
+          <p class="form-hint">This is <strong>your</strong> name &mdash; the AI will say it&rsquo;s calling on your behalf.</p>
+          <%= f.text_field :caller_name,
+                required: caller_entry&.dig("required"),
+                placeholder: "e.g. Alex",
+                class: "form-input mt-1" %>
+        </div>
+      </div>
     </div>
+
+    <%# ── Template-specific call details ── %>
+    <% if extra_entries.any? %>
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Call details</h2>
+        </div>
+        <div class="card-body space-y-5">
+          <% extra_entries.each do |entry| %>
+            <% key = entry["key"] %>
+            <div class="form-field">
+              <label class="form-label" for="call_plan_variables_<%= key %>">
+                <%= entry["label"] %>
+                <% if entry["required"] %><span class="text-red-500 ml-0.5">*</span><% end %>
+              </label>
+              <% if (hint = schema_hints[key]) %>
+                <p class="form-hint"><%= hint %></p>
+              <% end %>
+              <input type="text"
+                     name="call_plan_variables[<%= key %>]"
+                     id="call_plan_variables_<%= key %>"
+                     value="<%= saved_vars[key] %>"
+                     class="form-input mt-1"
+                     <%= "required" if entry["required"] %> />
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%# ── Instructions for the AI ── %>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Instructions for the AI</h2>
+      </div>
+      <div class="card-body space-y-5">
+        <div class="form-field">
+          <p class="form-label">Goal</p>
+          <p class="form-hint">Auto-generated from the template. Your details above will be included when the call is made.</p>
+          <div class="mt-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4 py-3 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            <%= local_assigns[:template].goal_template %>
+          </div>
+        </div>
+        <div class="form-field">
+          <%= f.label :fallback, "Fallback", class: "form-label" %>
+          <p class="form-hint">What to do if the goal can&rsquo;t be achieved (e.g. nobody answers).</p>
+          <%= f.text_area :fallback, rows: 2, placeholder: "e.g. Leave a voicemail asking them to call back", class: "form-textarea mt-1" %>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <%# ── About the caller ── %>
-  <div class="card">
-    <div class="card-header">
-      <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Caller identity</h2>
-    </div>
-    <div class="card-body">
-      <div class="form-field max-w-sm">
-        <%= f.label :caller_name, "Your first name", class: "form-label" %>
-        <p class="form-hint">This is <strong>your</strong> name &mdash; the AI will say it&rsquo;s calling on your behalf.</p>
-        <%= f.text_field :caller_name, placeholder: "e.g. Alex", class: "form-input mt-1" %>
+<% else %>
+  <%# ── GENERIC FORM (no template) ─────────────────────────────────────────── %>
+
+  <div class="space-y-6">
+
+    <%# ── Who are we calling? ── %>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Who are we calling?</h2>
+      </div>
+      <div class="card-body grid sm:grid-cols-2 gap-5">
+        <div class="form-field">
+          <%= f.label :target_name, "Business or person name", class: "form-label" %>
+          <%= f.text_field :target_name, placeholder: "e.g. Maplewood Auto", class: "form-input" %>
+        </div>
+        <div class="form-field">
+          <%= f.label :target_phone, "Phone number", class: "form-label" %>
+          <%= f.telephone_field :target_phone, placeholder: "e.g. (555) 867-5309 or +15558675309", class: "form-input" %>
+        </div>
+        <div class="form-field">
+          <%= f.label :target_contact_name, "Contact name (optional)", class: "form-label" %>
+          <p class="form-hint">A specific person to ask for at the business.</p>
+          <%= f.text_field :target_contact_name, placeholder: "e.g. Sarah", class: "form-input mt-1" %>
+        </div>
+      </div>
+      <div class="card-body border-t border-slate-100 dark:border-slate-700">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <%= f.check_box :voicemail_only, class: "h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" %>
+          <span class="text-sm text-slate-700 dark:text-slate-300">
+            Number goes straight to voicemail
+            <span class="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">Skip the live-call consent opener and leave a voicemail message directly.</span>
+          </span>
+        </label>
       </div>
     </div>
+
+    <%# ── About the caller ── %>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Caller identity</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-field max-w-sm">
+          <%= f.label :caller_name, "Your first name", class: "form-label" %>
+          <p class="form-hint">This is <strong>your</strong> name &mdash; the AI will say it&rsquo;s calling on your behalf.</p>
+          <%= f.text_field :caller_name, placeholder: "e.g. Alex", class: "form-input mt-1" %>
+        </div>
+      </div>
+    </div>
+
+    <%# ── What should the AI do? ── %>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Instructions for the AI</h2>
+      </div>
+      <div class="card-body space-y-5">
+        <div class="form-field">
+          <%= f.label :goal, "Goal", class: "form-label" %>
+          <p class="form-hint">What the AI should accomplish on the call.</p>
+          <%= f.text_area :goal, rows: 3, placeholder: "e.g. Ask whether my vehicle is ready for pickup", class: "form-textarea mt-1" %>
+        </div>
+        <div class="form-field">
+          <%= f.label :fallback, "Fallback", class: "form-label" %>
+          <p class="form-hint">What to do if the goal can't be achieved (e.g. nobody answers).</p>
+          <%= f.text_area :fallback, rows: 2, placeholder: "e.g. Leave a voicemail asking them to call back", class: "form-textarea mt-1" %>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <%# ── What should the AI do? ── %>
-  <div class="card">
-    <div class="card-header">
-      <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Instructions for the AI</h2>
-    </div>
-    <div class="card-body space-y-5">
-      <div class="form-field">
-        <%= f.label :goal, "Goal", class: "form-label" %>
-        <p class="form-hint">What the AI should accomplish on the call.</p>
-        <%= f.text_area :goal, rows: 3, placeholder: "e.g. Ask whether my vehicle is ready for pickup", class: "form-textarea mt-1" %>
-      </div>
-      <div class="form-field">
-        <%= f.label :fallback, "Fallback", class: "form-label" %>
-        <p class="form-hint">What to do if the goal can't be achieved (e.g. nobody answers).</p>
-        <%= f.text_area :fallback, rows: 2, placeholder: "e.g. Leave a voicemail asking them to call back", class: "form-textarea mt-1" %>
-      </div>
-    </div>
-  </div>
-
-</div>
+<% end %>
 
 <%# Hidden array fields — preserved across edits %>
 <% (call_plan.allowed_to_share || []).each do |item| %>
