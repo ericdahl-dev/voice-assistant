@@ -55,4 +55,9 @@ Rails.application.configure do
   # queued via the :test adapter set in rails_helper.rb.
   config.good_job.execution_mode = :external
   config.active_job.queue_adapter = :test
+
+  # Fixed AR encryption keys for test — never use these outside of test.
+  config.active_record.encryption.primary_key = "test-primary-key-32-chars-padded!"
+  config.active_record.encryption.deterministic_key = "test-deterministic-key-32-chars!!"
+  config.active_record.encryption.key_derivation_salt = "test-key-derivation-salt-32chars!"
 end
