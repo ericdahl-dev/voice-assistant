@@ -39,14 +39,25 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      - name: Cache Tailwind build
+      - name: Cache Bootsnap
         uses: actions/cache@v5
         with:
+          path: tmp/cache
+          key: bootsnap-${{ runner.os }}-${{ hashFiles('.ruby-version', 'Gemfile.lock') }}
+          restore-keys: |
+            bootsnap-${{ runner.os }}-
+
+      - name: Cache Tailwind build
+        uses: actions/cache@v5
+        id: tailwind-css-cache
+        with:
           path: app/assets/builds
-          key: tailwind-${{ hashFiles('app/assets/tailwind/**', 'app/javascript/**', 'app/views/**') }}
-          restore-keys: tailwind-
+          key: tailwind-${{ runner.os }}-${{ hashFiles('app/assets/tailwind/**', 'app/javascript/**', 'app/views/**', 'Gemfile.lock', 'config/importmap.rb') }}
+          restore-keys: |
+            tailwind-${{ runner.os }}-
 
       - name: Build Tailwind CSS
+        if: steps.tailwind-css-cache.outputs.cache-hit != 'true'
         run: bin/rails tailwindcss:build
 
       - name: Set up database
@@ -70,6 +81,14 @@ jobs:
         with:
           ruby-version: .ruby-version
           bundler-cache: true
+
+      - name: Cache Bootsnap
+        uses: actions/cache@v5
+        with:
+          path: tmp/cache
+          key: bootsnap-${{ runner.os }}-${{ hashFiles('.ruby-version', 'Gemfile.lock') }}
+          restore-keys: |
+            bootsnap-${{ runner.os }}-
 
       - name: Cache RuboCop
         uses: actions/cache@v5
