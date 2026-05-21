@@ -274,7 +274,7 @@ GEM
     posthog-rails (3.8.0)
       posthog-ruby (~> 3.8)
       railties (>= 5.2.0)
-    posthog-ruby (3.8.0)
+    posthog-ruby (3.9.1)
       concurrent-ruby (~> 1)
     pp (0.6.3)
       prettyprint
@@ -546,6 +546,7 @@ CHECKSUMS
   bootsnap (1.24.3) sha256=f7fa3d20597e2f0aa52b0a1aba83fb54d4f79e9c2e210ec4fa1e8895514dcad8
   brakeman (8.0.4) sha256=7bf921fa9638544835df9aa7b3e720a9a72c0267f34f92135955edd80d4dcf6f
   builder (3.3.0) sha256=497918d2f9dca528fdca4b88d84e4ef4387256d984b8154e9d5d3fe5a9c8835f
+  bundler (4.0.12) sha256=7f8b757d28dfb636e7b24fba2344ac6dd13b5b24f4b46d62573d483f211825ac
   bundler-audit (0.9.3) sha256=81c8766c71e47d0d28a0f98c7eed028539f21a6ea3cd8f685eb6f42333c9b4e9
   coderay (1.1.3) sha256=dc530018a4684512f8f38143cd2a096c9f02a1fc2459edcfe534787a7fc77d4b
   concurrent-ruby (1.3.6) sha256=6b56837e1e7e5292f9864f34b69c5a2cbc75c0cf5338f1ce9903d10fa762d5ab
@@ -635,7 +636,7 @@ CHECKSUMS
   pg (1.6.3-x86_64-linux) sha256=5d9e188c8f7a0295d162b7b88a768d8452a899977d44f3274d1946d67920ae8d
   pg (1.6.3-x86_64-linux-musl) sha256=9c9c90d98c72f78eb04c0f55e9618fe55d1512128e411035fe229ff427864009
   posthog-rails (3.8.0) sha256=f2e3a17dab3b9d6fdc8512102127864cd5e82e9c2a4dc67e166b061307b81992
-  posthog-ruby (3.8.0) sha256=133a727ee1ba241442dcc51f547580b04890c2a7f1f7746d4154b396a6bb9290
+  posthog-ruby (3.9.1) sha256=e06b486d6e4443fc5c89406baf17807fb83fc76c6e3e9f31d9039b57b6e79726
   pp (0.6.3) sha256=2951d514450b93ccfeb1df7d021cae0da16e0a7f95ee1e2273719669d0ab9df6
   prettyprint (0.2.0) sha256=2bc9e15581a94742064a3cc8b0fb9d45aae3d03a1baa6ef80922627a0766f193
   prism (1.9.0) sha256=7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85
